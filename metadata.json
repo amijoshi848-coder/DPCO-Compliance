@@ -1,0 +1,6 @@
+{
+  "name": "DPCO Compliance",
+  "description": "NPPA DPCO 2013 & NLEM 2022 regulatory compliance dashboard for Ceiling Prices, Form 1A Retail Price circulars, Expert Committee & Authority minutes, and Form I applicability screening.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,2647 @@
+{
+  "users": [
+    {
+      "id": "usr-admin",
+      "loginId": "admin",
+      "fullName": "DPCO Administrator",
+      "department": "Regulatory & Pricing Governance",
+      "role": "admin",
+      "passwordHash": "179819f2bea86185f1da13a336658282:5c6c550d387b2ef766bd8e61d3e15951b0f4ce5fc1e14c4d3aa9b6696b80d48a5cec2f9c47128b64ea50d9cf9b70c4fd8d28fffb94fea0c15ffca2081241551f",
+      "active": true,
+      "createdAt": "2026-11-18T09:47:24.900Z",
+      "lastLoginAt": "2026-11-19T07:02:03.793Z"
+    },
+    {
+      "id": "usr-reg-1",
+      "loginId": "regulatory.lead",
+      "fullName": "Priya Nair",
+      "department": "Regulatory Affairs",
+      "role": "user",
+      "passwordHash": "809fc06e904c4b83872b572f39ab6576:7eac5d428b30b0383daaa3a9ea7324e0549a90b6b6ff2ece99711c84b59e25f78412de21a5370c62ba4eae060d0522879fe0b6353ded917f81da30683a662ccc",
+      "active": true,
+      "createdAt": "2026-11-18T09:47:24.900Z"
+    }
+  ],
+  "ceilingPrices": [
+    {
+      "id": "cp-1",
+      "medicineName": "Atorvastatin",
+      "composition": "Atorvastatin Calcium IP eq. to Atorvastatin",
+      "strength": "10mg",
+      "dosageFormat": "Tablet",
+      "unitLabel": "1 Tablet",
+      "ceilingPrice": 5.82,
+      "notificationNumber": "S.O. 4950(E)",
+      "notificationDate": "2026-11-19",
+      "effectiveDate": "2026-11-19",
+      "nlemSection": "12.4",
+      "gstDefault": 12,
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "updatedAt": "2026-11-19T06:53:37.441Z"
+    },
+    {
+      "id": "cp-2",
+      "medicineName": "Atorvastatin",
+      "composition": "Atorvastatin Calcium IP eq. to Atorvastatin",
+      "strength": "20mg",
+      "dosageFormat": "Tablet",
+      "unitLabel": "1 Tablet",
+      "ceilingPrice": 12.15,
+      "notificationNumber": "S.O. 1642(E)",
+      "notificationDate": "2026-04-01",
+      "effectiveDate": "2026-04-01",
+      "nlemSection": "12.4",
+      "gstDefault": 12,
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "updatedAt": "2026-04-01T10:00:00+05:30"
+    },
+    {
+      "id": "cp-3",
+      "medicineName": "Atorvastatin",
+      "composition": "Atorvastatin Calcium IP eq. to Atorvastatin",
+      "strength": "40mg",
+      "dosageFormat": "Tablet",
+      "unitLabel": "1 Tablet",
+      "ceilingPrice": 18.88,
+      "notificationNumber": "S.O. 1642(E)",
+      "notificationDate": "2026-04-01",
+      "effectiveDate": "2026-04-01",
+      "nlemSection": "12.4",
+      "gstDefault": 12,
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "updatedAt": "2026-04-01T10:00:00+05:30"
+    },
+    {
+      "id": "cp-4",
+      "medicineName": "Atorvastatin",
+      "composition": "Atorvastatin Calcium IP eq. to Atorvastatin",
+      "strength": "80mg",
+      "dosageFormat": "Tablet",
+      "unitLabel": "1 Tablet",
+      "ceilingPrice": 27.64,
+      "notificationNumber": "S.O. 1642(E)",
+      "notificationDate": "2026-04-01",
+      "effectiveDate": "2026-04-01",
+      "nlemSection": "12.4",
+      "gstDefault": 12,
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "updatedAt": "2026-04-01T10:00:00+05:30"
+    },
+    {
+      "id": "cp-5",
+      "medicineName": "Metformin",
+      "composition": "Metformin Hydrochloride IP",
+      "strength": "500mg",
+      "dosageFormat": "Tablet",
+      "unitLabel": "1 Tablet",
+      "ceilingPrice": 1.72,
+      "notificationNumber": "S.O. 1642(E)",
+      "notificationDate": "2026-04-01",
+      "effectiveDate": "2026-04-01",
+      "nlemSection": "18.5.1",
+      "gstDefault": 12,
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "updatedAt": "2026-04-01T10:00:00+05:30"
+    },
+    {
+      "id": "cp-6",
+      "medicineName": "Telmisartan",
+      "composition": "Telmisartan IP",
+      "strength": "40mg",
+      "dosageFormat": "Tablet",
+      "unitLabel": "1 Tablet",
+      "ceilingPrice": 6.95,
+      "notificationNumber": "S.O. 4950(E)",
+      "notificationDate": "2026-11-19",
+      "effectiveDate": "2026-11-19",
+      "nlemSection": "12.3",
+      "gstDefault": 12,
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "updatedAt": "2026-11-19T06:53:37.442Z"
+    },
+    {
+      "id": "cp-7",
+      "medicineName": "Amlodipine",
+      "composition": "Amlodipine Besylate IP eq. to Amlodipine",
+      "strength": "5mg",
+      "dosageFormat": "Tablet",
+      "unitLabel": "1 Tablet",
+      "ceilingPrice": 2.58,
+      "notificationNumber": "S.O. 3418(E)",
+      "notificationDate": "2026-08-12",
+      "effectiveDate": "2026-08-12",
+      "nlemSection": "12.3",
+      "gstDefault": 12,
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "updatedAt": "2026-08-12T10:00:00+05:30"
+    },
+    {
+      "id": "cp-8",
+      "medicineName": "Amoxicillin + Clavulanic acid",
+      "composition": "Amoxicillin Trihydrate 500mg + Potassium Clavulanate 125mg",
+      "strength": "500mg + 125mg",
+      "dosageFormat": "Tablet",
+      "unitLabel": "1 Tablet",
+      "ceilingPrice": 18.24,
+      "notificationNumber": "S.O. 4105(E)",
+      "notificationDate": "2026-09-24",
+      "effectiveDate": "2026-09-24",
+      "nlemSection": "6.2.1",
+      "gstDefault": 12,
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "updatedAt": "2026-09-24T10:00:00+05:30"
+    },
+    {
+      "id": "cp-9",
+      "medicineName": "Azithromycin",
+      "composition": "Azithromycin Dihydrate IP eq. to Azithromycin Anhydrous",
+      "strength": "500mg",
+      "dosageFormat": "Tablet",
+      "unitLabel": "1 Tablet",
+      "ceilingPrice": 21.86,
+      "notificationNumber": "S.O. 4105(E)",
+      "notificationDate": "2026-09-24",
+      "effectiveDate": "2026-09-24",
+      "nlemSection": "6.2.2",
+      "gstDefault": 12,
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "updatedAt": "2026-09-24T10:00:00+05:30"
+    },
+    {
+      "id": "cp-10",
+      "medicineName": "Sitagliptin",
+      "composition": "Sitagliptin Phosphate Monohydrate IP eq. to Sitagliptin",
+      "strength": "100mg",
+      "dosageFormat": "Tablet",
+      "unitLabel": "1 Tablet",
+      "ceilingPrice": 14.9,
+      "notificationNumber": "S.O. 4620(E)",
+      "notificationDate": "2026-10-28",
+      "effectiveDate": "2026-10-28",
+      "nlemSection": "18.5.1",
+      "gstDefault": 12,
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "updatedAt": "2026-10-28T10:00:00+05:30"
+    },
+    {
+      "id": "cp-11",
+      "medicineName": "Paracetamol",
+      "composition": "Paracetamol IP",
+      "strength": "650mg",
+      "dosageFormat": "Tablet",
+      "unitLabel": "1 Tablet",
+      "ceilingPrice": 1.98,
+      "notificationNumber": "S.O. 4620(E)",
+      "notificationDate": "2026-10-28",
+      "effectiveDate": "2026-10-28",
+      "nlemSection": "2.1",
+      "gstDefault": 12,
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "updatedAt": "2026-10-28T10:00:00+05:30"
+    },
+    {
+      "id": "cp-12",
+      "medicineName": "Pantoprazole",
+      "composition": "Pantoprazole Sodium IP eq. to Pantoprazole (Lyophilized)",
+      "strength": "40mg",
+      "dosageFormat": "Injection",
+      "unitLabel": "1 Vial",
+      "ceilingPrice": 44.32,
+      "notificationNumber": "S.O. 4892(E)",
+      "notificationDate": "2026-11-11",
+      "effectiveDate": "2026-11-11",
+      "nlemSection": "17.1",
+      "gstDefault": 12,
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "updatedAt": "2026-11-11T10:00:00+05:30"
+    }
+  ],
+  "retailPrices": [
+    {
+      "id": "rp-1",
+      "notificationNumber": "S.O. 3241(E)",
+      "notificationDate": "2026-07-24",
+      "formulation": "Atorvastatin 10mg + Clopidogrel 75mg Capsule",
+      "composition": "Atorvastatin Calcium 10mg + Clopidogrel Bisulphate 75mg",
+      "strength": "10mg + 75mg",
+      "dosageFormat": "Capsule",
+      "unitLabel": "1 Capsule",
+      "retailPrice": 7.45,
+      "applicantCompany": "Multiple Applicants (Form 1A Reference)",
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "createdAt": "2026-07-24T10:00:00+05:30"
+    },
+    {
+      "id": "rp-2",
+      "notificationNumber": "S.O. 3398(E)",
+      "notificationDate": "2026-08-18",
+      "formulation": "Telmisartan 40mg + Amlodipine 5mg + Hydrochlorothiazide 12.5mg Tablet",
+      "composition": "Telmisartan 40mg + Amlodipine 5mg + Hydrochlorothiazide 12.5mg",
+      "strength": "40mg + 5mg + 12.5mg",
+      "dosageFormat": "Tablet",
+      "unitLabel": "1 Tablet",
+      "retailPrice": 10.62,
+      "applicantCompany": "Sun Pharma / Form 1A Benchmark",
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "createdAt": "2026-08-18T10:00:00+05:30"
+    },
+    {
+      "id": "rp-3",
+      "notificationNumber": "S.O. 3812(E)",
+      "notificationDate": "2026-09-09",
+      "formulation": "Sitagliptin 50mg + Metformin Hydrochloride 500mg Tablet",
+      "composition": "Sitagliptin Phosphate 50mg + Metformin HCl 500mg",
+      "strength": "50mg + 500mg",
+      "dosageFormat": "Tablet",
+      "unitLabel": "1 Tablet",
+      "retailPrice": 9.84,
+      "applicantCompany": "Cipla Ltd. / Form 1A Benchmark",
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "createdAt": "2026-09-09T10:00:00+05:30"
+    },
+    {
+      "id": "rp-4",
+      "notificationNumber": "S.O. 4219(E)",
+      "notificationDate": "2026-10-05",
+      "formulation": "Rosuvastatin 20mg + Aspirin 75mg Capsule",
+      "composition": "Rosuvastatin Calcium 20mg + Acetylsalicylic Acid 75mg",
+      "strength": "20mg + 75mg",
+      "dosageFormat": "Capsule",
+      "unitLabel": "1 Capsule",
+      "retailPrice": 15.3,
+      "applicantCompany": "Torrent Pharmaceuticals / Form 1A Benchmark",
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "createdAt": "2026-10-05T10:00:00+05:30"
+    },
+    {
+      "id": "rp-5",
+      "notificationNumber": "S.O. 4550(E)",
+      "notificationDate": "2026-10-22",
+      "formulation": "Dapagliflozin 10mg + Metformin HCl 500mg (ER) Tablet",
+      "composition": "Dapagliflozin Propanediol 10mg + Metformin HCl ER 500mg",
+      "strength": "10mg + 500mg",
+      "dosageFormat": "ER Tablet",
+      "unitLabel": "1 Tablet",
+      "retailPrice": 13.18,
+      "applicantCompany": "USV Private Limited / Form 1A Benchmark",
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "createdAt": "2026-10-22T10:00:00+05:30"
+    },
+    {
+      "id": "rp-6",
+      "notificationNumber": "S.O. 4895(E)",
+      "notificationDate": "2026-11-12",
+      "formulation": "Glimepiride 2mg + Metformin HCl 500mg (SR) Tablet",
+      "composition": "Glimepiride 2mg + Metformin Hydrochloride SR 500mg",
+      "strength": "2mg + 500mg",
+      "dosageFormat": "SR Tablet",
+      "unitLabel": "1 Tablet",
+      "retailPrice": 7.92,
+      "applicantCompany": "Lupin Limited / Form 1A Benchmark",
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "createdAt": "2026-11-12T10:00:00+05:30"
+    }
+  ],
+  "nppaLogs": [
+    {
+      "id": "live-expert_committee-Njk5LjIyIEtCIFBE",
+      "sourceType": "expert_committee",
+      "title": "699.22 KB PDF English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2025-09-16",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
+      "url": "https://nppa.gov.in/storage/uploads/expert-committee/71minutespdf-646c5c75ccd911429f78d73543259373-48e410df7094aa7fa13340c672fc0c81.pdf",
+      "fetchedAt": "2026-11-19T06:54:39.054Z",
+      "isLiveFetched": true,
+      "pdfUrl": "https://nppa.gov.in/storage/uploads/expert-committee/71minutespdf-646c5c75ccd911429f78d73543259373-48e410df7094aa7fa13340c672fc0c81.pdf"
+    },
+    {
+      "id": "live-expert_committee-Mi4yMiBNQiBQREYg",
+      "sourceType": "expert_committee",
+      "title": "2.22 MB PDF English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2025-10-09",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
+      "url": "https://nppa.gov.in/storage/uploads/expert-committee/72-mdc-minutes-signedcompressedpdf-6aefd0385ff1b09b747ae2005d553b05-792264d841678c989a5d34969c18ece1.pdf",
+      "fetchedAt": "2026-11-19T06:54:39.054Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-expert_committee-My40OCBNQiBQREYg",
+      "sourceType": "expert_committee",
+      "title": "3.48 MB PDF English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2025-11-25",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
+      "url": "https://nppa.gov.in/storage/uploads/expert-committee/73-mdc-minutespdf-1932c46eb57bcb4f814ad1501adbc885-8109d5805c666cc686ee7bf21b5a2bcb.pdf",
+      "fetchedAt": "2026-11-19T06:54:39.054Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-expert_committee-NDQ3LjIwIEtCIFBE",
+      "sourceType": "expert_committee",
+      "title": "447.20 KB PDF English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2025-12-18",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
+      "url": "https://nppa.gov.in/storage/uploads/expert-committee/74-minutescompressedpdf-85ef8742624421ce4f7ff3d2cdda76d5-5112d6e0605ce309a1b43d89991dd32a.pdf",
+      "fetchedAt": "2026-11-19T06:54:39.054Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-expert_committee-Mjk2LjYxIEtCIFBE",
+      "sourceType": "expert_committee",
+      "title": "296.61 KB PDF English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-02-11",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
+      "url": "https://nppa.gov.in/storage/uploads/expert-committee/75th-mdc-minutescompressedpdf-ea7293bd626be556fced3f3ce9039327-50dde7e9cabd480b13cbcecd3003e736.pdf",
+      "fetchedAt": "2026-11-19T06:54:39.054Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-expert_committee-NjM4LjI5IEtCIFBE",
+      "sourceType": "expert_committee",
+      "title": "638.29 KB PDF English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-04-08",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
+      "url": "https://nppa.gov.in/storage/uploads/expert-committee/76-mdc-meeting-signed-minutespdf-2cbc91f735e503bb25702ef452564ecc-3a504abfb3c91f1bc32be10c716a0150-3c2e944c77c6a9f2b5fde2c7fcbb5735.pdf",
+      "fetchedAt": "2026-11-19T06:54:39.054Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-expert_committee-NTQ2LjExIEtCIFBE",
+      "sourceType": "expert_committee",
+      "title": "546.11 KB PDF English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-05-15",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
+      "url": "https://nppa.gov.in/storage/uploads/expert-committee/merged-mdc-77th-c832f3b56d3ebb70f22fe530c5fd1063-6852add3cd246eaf01ad75b8823fafcd.pdf",
+      "fetchedAt": "2026-11-19T06:54:39.054Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-expert_committee-NTg1LjIyIEtCIFBE",
+      "sourceType": "expert_committee",
+      "title": "585.22 KB PDF English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-06-24",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
+      "url": "https://nppa.gov.in/storage/uploads/expert-committee/final-minutes-78th-mdc-35770e4b9f2f09904f5607504cab0b80.pdf",
+      "fetchedAt": "2026-11-19T06:54:39.054Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-expert_committee-NTg0LjczIEtCIFBE",
+      "sourceType": "expert_committee",
+      "title": "584.73 KB PDF English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-07-27",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
+      "url": "https://nppa.gov.in/storage/uploads/expert-committee/minutes-79th-mdc-e9bed1fc5761f31c8ebfd519ea84fde8.pdf",
+      "fetchedAt": "2026-11-19T06:54:39.054Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-expert_committee-NDE4LjE0IEtCIFBE",
+      "sourceType": "expert_committee",
+      "title": "418.14 KB PDF English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-09-24",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
+      "url": "https://nppa.gov.in/storage/uploads/expert-committee/signed-minutes-80th-mdc-compressed-c465a62a531e6ba279c3dec377e0828e.pdf",
+      "fetchedAt": "2026-11-19T06:54:39.054Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-authority_minutes-MU1CL1BERi9Fbmds",
+      "sourceType": "authority_minutes",
+      "title": "1MB/PDF/English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-05-26",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/year2026-2027).",
+      "url": "https://nppa.gov.in/storage/uploads/pdf/146th-minutes-compressed-cc5fd31fd6d59612b42851f284d82279.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.988Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-authority_minutes-ODYxS0IvUERGL0Vu",
+      "sourceType": "authority_minutes",
+      "title": "861KB/PDF/English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-07-07",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/year2026-2027).",
+      "url": "https://nppa.gov.in/storage/uploads/pdf/final-minutes-148th-authority-signed-7038de8292e335294e3ac1ef8b1c2130.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.988Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-authority_minutes-OTMxS0IvUERGL0Vu",
+      "sourceType": "authority_minutes",
+      "title": "931KB/PDF/English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-07-30",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/year2026-2027).",
+      "url": "https://nppa.gov.in/storage/uploads/pdf/149thauthorityminutes-507d96169dd1b131e9a1987ba36d8693.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.988Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-authority_minutes-OTIzS0IvUERGL0Vu",
+      "sourceType": "authority_minutes",
+      "title": "923KB/PDF/English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-08-25",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/year2026-2027).",
+      "url": "https://nppa.gov.in/storage/uploads/pdf/signed-minutes-150th-authority-meeting-fd2913dcca3c04e5e193f34157c7cfa0.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.988Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-authority_minutes-ODIzS0IvUERGL0Vu",
+      "sourceType": "authority_minutes",
+      "title": "823KB/PDF/English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-10-08",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/year2026-2027).",
+      "url": "https://nppa.gov.in/storage/uploads/pdf/151st-authority-minutes-signed-9bac1618a32b697c00adbb41940b916c.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.988Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-authority_minutes-Mk1CL1BERi9Fbmds",
+      "sourceType": "authority_minutes",
+      "title": "2MB/PDF/English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-10-16",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/year2026-2027).",
+      "url": "https://nppa.gov.in/storage/uploads/pdf/152-58a6f49ffd20be4f8275cc48381ca34c.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.988Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-authority_minutes-OTU1S0IvUERGL0Vu",
+      "sourceType": "authority_minutes",
+      "title": "955KB/PDF/English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-10-29",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/year2026-2027).",
+      "url": "https://nppa.gov.in/storage/uploads/pdf/153rd-authority-signed-cafd96a37b40964dbe8c65b1269150b4.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.988Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-authority_minutes-NzE4S0IvUERGL0Vu",
+      "sourceType": "authority_minutes",
+      "title": "718KB/PDF/English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-11-11",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/year2026-2027).",
+      "url": "https://nppa.gov.in/storage/uploads/pdf/final-minutes-154th-authority-meeting-signed-5f87244c5664be2821ad99523d61da45.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.988Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-circular-MS4xIE1CIFBERiBF",
+      "sourceType": "circular",
+      "title": "1.1 MB PDF English",
+      "referenceNumber": "f Non-Scheduled",
+      "publishedDate": "2026-11-09",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
+      "url": "https://nppa.gov.in/storage/uploads/tender/revised-mrp-report-30102026-30-10-2026.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.848Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-circular-MC42IE1CIFBERiBF",
+      "sourceType": "circular",
+      "title": "0.6 MB PDF English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-11-19",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
+      "url": "https://nppa.gov.in/storage/uploads/tender/review-04-11-2026.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.848Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-circular-MC42MyBNQiBQREYg",
+      "sourceType": "circular",
+      "title": "0.63 MB PDF English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-11-19",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
+      "url": "https://nppa.gov.in/storage/uploads/tender/per-gram-04-11-2026.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.848Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-circular-MC42NiBNQiBQREYg",
+      "sourceType": "circular",
+      "title": "0.66 MB PDF English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-11-19",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
+      "url": "https://nppa.gov.in/storage/uploads/tender/wpa-04-11-2026.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.848Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-circular-MC43OCBNQiBQREYg",
+      "sourceType": "circular",
+      "title": "0.78 MB PDF English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-11-19",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
+      "url": "https://nppa.gov.in/storage/uploads/tender/retail-04-11-2026.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.848Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-circular-MS4xNiBNQiBQREYg",
+      "sourceType": "circular",
+      "title": "1.16 MB PDF English",
+      "referenceNumber": "f Non-Scheduled",
+      "publishedDate": "2026-11-09",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
+      "url": "https://nppa.gov.in/storage/uploads/tender/revised-mrp-report-03112026-03-11-2026.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.848Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-circular-MS4yIE1CIFBERiBF",
+      "sourceType": "circular",
+      "title": "1.2 MB PDF English",
+      "referenceNumber": "f Non-Scheduled",
+      "publishedDate": "2026-11-09",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
+      "url": "https://nppa.gov.in/storage/uploads/tender/revised-mrp-report-04112026-04-11-2026.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.848Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-circular-MC4xNCBNQiBQREYg",
+      "sourceType": "circular",
+      "title": "0.14 MB PDF Hindi",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-11-19",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
+      "url": "https://nppa.gov.in/storage/uploads/tender/faq-on-tmr-hindi-06-11-2026.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.848Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-circular-MC4yMiBNQiBQREYg",
+      "sourceType": "circular",
+      "title": "0.22 MB PDF English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-11-19",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
+      "url": "https://nppa.gov.in/storage/uploads/tender/faq-on-tmr-06-11-2026.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.848Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-circular-MS4yMSBNQiBQREYg",
+      "sourceType": "circular",
+      "title": "1.21 MB PDF English",
+      "referenceNumber": "f Non-Scheduled",
+      "publishedDate": "2026-11-09",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
+      "url": "https://nppa.gov.in/storage/uploads/tender/revised-mrp-report-06112026-06-11-2026.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.848Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-circular-MS4xOSBNQiBQREYg",
+      "sourceType": "circular",
+      "title": "1.19 MB PDF English",
+      "referenceNumber": "f Non-Scheduled",
+      "publishedDate": "2026-11-09",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
+      "url": "https://nppa.gov.in/storage/uploads/tender/revised-mrp-information-09112026-09-11-2026.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.848Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-circular-MS45NyBNQiBQREYg",
+      "sourceType": "circular",
+      "title": "1.97 MB PDF English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-11-19",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
+      "url": "https://nppa.gov.in/storage/uploads/tender/om-dated-11112026-11-11-2026.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.848Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-circular-MS40MiBNQiBQREYg",
+      "sourceType": "circular",
+      "title": "1.42 MB PDF English",
+      "referenceNumber": "f Non-Scheduled",
+      "publishedDate": "2026-11-09",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
+      "url": "https://nppa.gov.in/storage/uploads/tender/revised-mrp-information-11112026-1-11-11-2026.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.848Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-circular-MC41NCBNQiBQREYg",
+      "sourceType": "circular",
+      "title": "0.54 MB PDF English",
+      "referenceNumber": "NPPA Notice",
+      "publishedDate": "2026-11-19",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
+      "url": "https://nppa.gov.in/storage/uploads/tender/277903-14-11-2026.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.848Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-circular-MS41MiBNQiBQREYg",
+      "sourceType": "circular",
+      "title": "1.52 MB PDF English",
+      "referenceNumber": "f Non-Scheduled",
+      "publishedDate": "2026-11-09",
+      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
+      "url": "https://nppa.gov.in/storage/uploads/tender/revised-mrp-information-18-11-2026.pdf",
+      "fetchedAt": "2026-11-19T06:54:38.848Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "doc-c-1",
+      "sourceType": "circular",
+      "title": "Fixation of Retail Price of 44 New Drug Formulations under Para 5 & Para 15 of DPCO, 2013",
+      "referenceNumber": "S.O. 4895(E)",
+      "publishedDate": "2026-11-12",
+      "summary": "Notifies retail prices for FDCs including Glimepiride + Metformin SR and cardiovascular combinations for Form 1A reference.",
+      "url": "https://nppa.gov.in/en/view_more?id=4",
+      "fetchedAt": "2026-11-18T10:00:00+05:30",
+      "isLiveFetched": false
+    },
+    {
+      "id": "doc-c-2",
+      "sourceType": "circular",
+      "title": "Revision of Ceiling Price of Scheduled Formulations under NLEM 2022 (Pantoprazole 40mg Inj. & Analgesics)",
+      "referenceNumber": "S.O. 4892(E)",
+      "publishedDate": "2026-11-11",
+      "summary": "Ceiling price update excluding GST. Manufacturers must implement revised MRP within 45 days and submit Form V.",
+      "url": "https://nppa.gov.in/en/view_more?id=4",
+      "fetchedAt": "2026-11-18T10:00:00+05:30",
+      "isLiveFetched": false
+    },
+    {
+      "id": "doc-c-3",
+      "sourceType": "circular",
+      "title": "Ceiling Price Notification for Sitagliptin 100mg & Paracetamol 650mg Scheduled Packs",
+      "referenceNumber": "S.O. 4620(E)",
+      "publishedDate": "2026-10-28",
+      "summary": "Updated ceiling prices per tablet for NLEM 2022 scheduled oral solids.",
+      "url": "https://nppa.gov.in/en/view_more?id=4",
+      "fetchedAt": "2026-11-18T10:00:00+05:30",
+      "isLiveFetched": false
+    },
+    {
+      "id": "doc-a-1",
+      "sourceType": "authority_minutes",
+      "title": "Minutes of the 134th Authority Meeting of NPPA (FY 2026–2027)",
+      "referenceNumber": "NPPA/Auth/134/2026-27",
+      "publishedDate": "2026-11-06",
+      "summary": "Approval of Form I retail price recommendations for 32 new drug combinations and review of WPI-linked ceiling price revisions.",
+      "url": "https://nppa.gov.in/en/year2026-2027",
+      "fetchedAt": "2026-11-18T10:00:00+05:30",
+      "isLiveFetched": false
+    },
+    {
+      "id": "doc-a-2",
+      "sourceType": "authority_minutes",
+      "title": "Minutes of the 133rd Authority Meeting of NPPA (FY 2026–2027)",
+      "referenceNumber": "NPPA/Auth/133/2026-27",
+      "publishedDate": "2026-09-29",
+      "summary": "Deliberations on Para 19 extraordinary price adjustments and Form 1A benchmark retail price adoption guidelines.",
+      "url": "https://nppa.gov.in/en/year2026-2027",
+      "fetchedAt": "2026-11-18T10:00:00+05:30",
+      "isLiveFetched": false
+    },
+    {
+      "id": "doc-e-1",
+      "sourceType": "expert_committee",
+      "title": "Minutes of the Multidisciplinary Committee of Experts — 74th Meeting",
+      "referenceNumber": "MDC/74/2026",
+      "publishedDate": "2026-11-02",
+      "summary": "Technical evaluation of existing manufacturer status under Para 2(u) for statin + anti-ulcer FDCs and modified-release oral antidiabetics.",
+      "url": "https://nppa.gov.in/en/expertscommittee",
+      "fetchedAt": "2026-11-18T10:00:00+05:30",
+      "isLiveFetched": false
+    },
+    {
+      "id": "doc-e-2",
+      "sourceType": "expert_committee",
+      "title": "Minutes of the Multidisciplinary Committee of Experts — 73rd Meeting",
+      "referenceNumber": "MDC/73/2026",
+      "publishedDate": "2026-09-17",
+      "summary": "Recommendations on separate ceiling price determination for dispersible tablets and pediatric oral liquid strengths.",
+      "url": "https://nppa.gov.in/en/expertscommittee",
+      "fetchedAt": "2026-11-18T10:00:00+05:30",
+      "isLiveFetched": false
+    }
+  ],
+  "nlem2022": [
+    {
+      "id": "nlem-atorvastatin",
+      "medicineName": "Atorvastatin",
+      "aliases": [
+        "atorvastatin calcium"
+      ],
+      "therapeuticCategory": "Cardiovascular Medicines — Lipid-lowering agents",
+      "sectionCode": "12.4",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "10mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "20mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "40mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "80mg",
+          "levelOfHealthcare": "T"
+        }
+      ],
+      "notes": "Scheduled under NLEM 2022 Section 12.4 (Hypolipidemic drugs)."
+    },
+    {
+      "id": "nlem-rosuvastatin",
+      "medicineName": "Rosuvastatin",
+      "aliases": [
+        "rosuvastatin calcium"
+      ],
+      "therapeuticCategory": "Cardiovascular Medicines — Lipid-lowering agents",
+      "sectionCode": "12.4",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "5mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "10mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "20mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "40mg",
+          "levelOfHealthcare": "T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-metformin",
+      "medicineName": "Metformin",
+      "aliases": [
+        "metformin hydrochloride",
+        "metformin hcl"
+      ],
+      "therapeuticCategory": "Medicines used in Diabetes",
+      "sectionCode": "18.5.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "500mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "750mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "1000mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "SR Tablet",
+          "strength": "500mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "SR Tablet",
+          "strength": "1000mg",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-glimepiride",
+      "medicineName": "Glimepiride",
+      "therapeuticCategory": "Medicines used in Diabetes",
+      "sectionCode": "18.5.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "1mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "2mg",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-sitagliptin",
+      "medicineName": "Sitagliptin",
+      "aliases": [
+        "sitagliptin phosphate"
+      ],
+      "therapeuticCategory": "Medicines used in Diabetes (NLEM 2022 Addition)",
+      "sectionCode": "18.5.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "25mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "50mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "100mg",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-teneligliptin",
+      "medicineName": "Teneligliptin",
+      "therapeuticCategory": "Medicines used in Diabetes (NLEM 2022 Addition)",
+      "sectionCode": "18.5.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "20mg",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-amlodipine",
+      "medicineName": "Amlodipine",
+      "aliases": [
+        "amlodipine besylate"
+      ],
+      "therapeuticCategory": "Cardiovascular Medicines — Antihypertensives",
+      "sectionCode": "12.3",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "2.5mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "5mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "10mg",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-telmisartan",
+      "medicineName": "Telmisartan",
+      "therapeuticCategory": "Cardiovascular Medicines — Antihypertensives",
+      "sectionCode": "12.3",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "20mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "40mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "80mg",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-losartan",
+      "medicineName": "Losartan",
+      "aliases": [
+        "losartan potassium"
+      ],
+      "therapeuticCategory": "Cardiovascular Medicines — Antihypertensives",
+      "sectionCode": "12.3",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "25mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "50mg",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-enalapril",
+      "medicineName": "Enalapril",
+      "aliases": [
+        "enalapril maleate"
+      ],
+      "therapeuticCategory": "Cardiovascular Medicines — Antihypertensives",
+      "sectionCode": "12.3",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "2.5mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "5mg",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-metoprolol",
+      "medicineName": "Metoprolol",
+      "aliases": [
+        "metoprolol succinate",
+        "metoprolol tartrate"
+      ],
+      "therapeuticCategory": "Cardiovascular Medicines — Antianginal / Antihypertensive",
+      "sectionCode": "12.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "25mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "50mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "SR Tablet",
+          "strength": "25mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "SR Tablet",
+          "strength": "50mg",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-aspirin",
+      "medicineName": "Acetylsalicylic acid",
+      "aliases": [
+        "aspirin",
+        "acetylsalicylic acid"
+      ],
+      "therapeuticCategory": "Cardiovascular / Antithrombotic Medicines",
+      "sectionCode": "12.5",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "75mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "100mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "150mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "325mg",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-clopidogrel",
+      "medicineName": "Clopidogrel",
+      "aliases": [
+        "clopidogrel bisulphate"
+      ],
+      "therapeuticCategory": "Cardiovascular / Antithrombotic Medicines",
+      "sectionCode": "12.5",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "75mg",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-dabigatran",
+      "medicineName": "Dabigatran",
+      "aliases": [
+        "dabigatran etexilate"
+      ],
+      "therapeuticCategory": "Medicines affecting coagulation (NLEM 2022 Addition)",
+      "sectionCode": "10.2",
+      "dosageForms": [
+        {
+          "dosageForm": "Capsule",
+          "strength": "75mg",
+          "levelOfHealthcare": "T"
+        },
+        {
+          "dosageForm": "Capsule",
+          "strength": "110mg",
+          "levelOfHealthcare": "T"
+        },
+        {
+          "dosageForm": "Capsule",
+          "strength": "150mg",
+          "levelOfHealthcare": "T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-paracetamol",
+      "medicineName": "Paracetamol",
+      "aliases": [
+        "acetaminophen"
+      ],
+      "therapeuticCategory": "Analgesics, Antipyretics, Non-steroidal Anti-inflammatory Medicines",
+      "sectionCode": "2.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "500mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "650mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Oral Liquid",
+          "strength": "125mg/5ml",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Oral Liquid",
+          "strength": "250mg/5ml",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Suppository",
+          "strength": "80mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Suppository",
+          "strength": "170mg",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-diclofenac",
+      "medicineName": "Diclofenac",
+      "aliases": [
+        "diclofenac sodium",
+        "diclofenac potassium"
+      ],
+      "therapeuticCategory": "Analgesics, Antipyretics, NSAIDs",
+      "sectionCode": "2.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "50mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Injection",
+          "strength": "25mg/ml",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-ibuprofen",
+      "medicineName": "Ibuprofen",
+      "therapeuticCategory": "Analgesics, Antipyretics, NSAIDs",
+      "sectionCode": "2.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "200mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "400mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Oral Liquid",
+          "strength": "100mg/5ml",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-amoxicillin",
+      "medicineName": "Amoxicillin",
+      "aliases": [
+        "amoxycillin"
+      ],
+      "therapeuticCategory": "Anti-infective Medicines — Antibacterials",
+      "sectionCode": "6.2.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Capsule",
+          "strength": "250mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Capsule",
+          "strength": "500mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Dispersible Tablet",
+          "strength": "125mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Dispersible Tablet",
+          "strength": "250mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Oral Liquid",
+          "strength": "250mg/5ml",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-amox-clav",
+      "medicineName": "Amoxicillin + Clavulanic acid",
+      "aliases": [
+        "co-amoxiclav",
+        "amoxicillin and clavulanate",
+        "clavulanic acid"
+      ],
+      "therapeuticCategory": "Anti-infective Medicines — Antibacterials",
+      "sectionCode": "6.2.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "500mg + 125mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "875mg + 125mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Oral Liquid",
+          "strength": "200mg + 28.5mg/5ml",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Powder for Injection",
+          "strength": "500mg + 100mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Powder for Injection",
+          "strength": "1g + 200mg",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-azithromycin",
+      "medicineName": "Azithromycin",
+      "therapeuticCategory": "Anti-infective Medicines — Antibacterials",
+      "sectionCode": "6.2.2",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "250mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "500mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Oral Liquid",
+          "strength": "200mg/5ml",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Powder for Injection",
+          "strength": "500mg",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-cefixime",
+      "medicineName": "Cefixime",
+      "therapeuticCategory": "Anti-infective Medicines — Cephalosporins",
+      "sectionCode": "6.2.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "200mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "400mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Oral Liquid",
+          "strength": "50mg/5ml",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Oral Liquid",
+          "strength": "100mg/5ml",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-ceftriaxone",
+      "medicineName": "Ceftriaxone",
+      "aliases": [
+        "ceftriaxone sodium"
+      ],
+      "therapeuticCategory": "Anti-infective Medicines — Cephalosporins",
+      "sectionCode": "6.2.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Powder for Injection",
+          "strength": "250mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Powder for Injection",
+          "strength": "500mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Powder for Injection",
+          "strength": "1g",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Powder for Injection",
+          "strength": "2g",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-ciprofloxacin",
+      "medicineName": "Ciprofloxacin",
+      "aliases": [
+        "ciprofloxacin hydrochloride"
+      ],
+      "therapeuticCategory": "Anti-infective Medicines — Fluoroquinolones",
+      "sectionCode": "6.2.2",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "250mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "500mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Injection",
+          "strength": "200mg/100ml",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Drops",
+          "strength": "0.3%",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-meropenem",
+      "medicineName": "Meropenem",
+      "therapeuticCategory": "Anti-infective Medicines — Carbapenems (NLEM 2022 Addition)",
+      "sectionCode": "6.2.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Powder for Injection",
+          "strength": "500mg",
+          "levelOfHealthcare": "T"
+        },
+        {
+          "dosageForm": "Powder for Injection",
+          "strength": "1g",
+          "levelOfHealthcare": "T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-omeprazole",
+      "medicineName": "Omeprazole",
+      "therapeuticCategory": "Gastrointestinal Medicines — Antiulcer",
+      "sectionCode": "17.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Capsule",
+          "strength": "10mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Capsule",
+          "strength": "20mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Capsule",
+          "strength": "40mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Powder for Oral Liquid",
+          "strength": "20mg",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-pantoprazole",
+      "medicineName": "Pantoprazole",
+      "aliases": [
+        "pantoprazole sodium"
+      ],
+      "therapeuticCategory": "Gastrointestinal Medicines — Antiulcer",
+      "sectionCode": "17.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Injection",
+          "strength": "40mg",
+          "levelOfHealthcare": "S, T"
+        }
+      ],
+      "notes": "Only Pantoprazole Injection 40mg is scheduled in NLEM 2022 (oral tablets are non-scheduled)."
+    },
+    {
+      "id": "nlem-ondansetron",
+      "medicineName": "Ondansetron",
+      "therapeuticCategory": "Gastrointestinal Medicines — Antiemetics",
+      "sectionCode": "17.2",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "4mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "8mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Oral Liquid",
+          "strength": "2mg/5ml",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Injection",
+          "strength": "2mg/ml",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-salbutamol",
+      "medicineName": "Salbutamol",
+      "aliases": [
+        "albuterol"
+      ],
+      "therapeuticCategory": "Medicines acting on the Respiratory Tract",
+      "sectionCode": "25.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "2mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "4mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "MDI Inhaler",
+          "strength": "100mcg/dose",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Respirator Solution",
+          "strength": "5mg/ml",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-budesonide",
+      "medicineName": "Budesonide",
+      "therapeuticCategory": "Medicines acting on the Respiratory Tract",
+      "sectionCode": "25.1",
+      "dosageForms": [
+        {
+          "dosageForm": "MDI / DPI Inhaler",
+          "strength": "100mcg/dose",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "MDI / DPI Inhaler",
+          "strength": "200mcg/dose",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Respirator Solution",
+          "strength": "0.5mg/2ml",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Respirator Solution",
+          "strength": "1mg/2ml",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-cetirizine",
+      "medicineName": "Cetirizine",
+      "aliases": [
+        "cetirizine hydrochloride"
+      ],
+      "therapeuticCategory": "Antiallergics and Medicines used in Anaphylaxis",
+      "sectionCode": "3.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "10mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Oral Liquid",
+          "strength": "5mg/5ml",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-furosemide",
+      "medicineName": "Furosemide",
+      "aliases": [
+        "frusemide"
+      ],
+      "therapeuticCategory": "Diuretics",
+      "sectionCode": "16.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "40mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Injection",
+          "strength": "10mg/ml",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-hydrochlorothiazide",
+      "medicineName": "Hydrochlorothiazide",
+      "aliases": [
+        "hctz"
+      ],
+      "therapeuticCategory": "Diuretics / Antihypertensives",
+      "sectionCode": "16.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "12.5mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "25mg",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-levetiracetam",
+      "medicineName": "Levetiracetam",
+      "therapeuticCategory": "Anticonvulsants / Antiepileptics",
+      "sectionCode": "5.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "250mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "500mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "750mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Oral Solution",
+          "strength": "100mg/ml",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Injection",
+          "strength": "100mg/ml",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-levothyroxine",
+      "medicineName": "Levothyroxine",
+      "aliases": [
+        "thyroxine sodium"
+      ],
+      "therapeuticCategory": "Thyroid Hormones",
+      "sectionCode": "18.8",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "12.5mcg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "25mcg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "50mcg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "75mcg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "100mcg",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-ivermectin",
+      "medicineName": "Ivermectin",
+      "therapeuticCategory": "Anthelmintics (NLEM 2022 Addition)",
+      "sectionCode": "6.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "3mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "6mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "12mg",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-fluconazole",
+      "medicineName": "Fluconazole",
+      "therapeuticCategory": "Antifungal Medicines",
+      "sectionCode": "6.3",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "150mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "200mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Injection",
+          "strength": "2mg/ml",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-albendazole",
+      "medicineName": "Albendazole",
+      "therapeuticCategory": "Anthelmintics",
+      "sectionCode": "6.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "400mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Oral Liquid",
+          "strength": "200mg/5ml",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-ramipril",
+      "medicineName": "Ramipril",
+      "therapeuticCategory": "Cardiovascular Medicines — Antihypertensives",
+      "sectionCode": "12.3",
+      "dosageForms": [
+        {
+          "dosageForm": "Capsule / Tablet",
+          "strength": "2.5mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Capsule / Tablet",
+          "strength": "5mg",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-spironolactone",
+      "medicineName": "Spironolactone",
+      "therapeuticCategory": "Diuretics / Heart Failure",
+      "sectionCode": "16.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "25mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "50mg",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-enoxaparin",
+      "medicineName": "Enoxaparin",
+      "aliases": [
+        "enoxaparin sodium"
+      ],
+      "therapeuticCategory": "Medicines affecting coagulation",
+      "sectionCode": "10.2",
+      "dosageForms": [
+        {
+          "dosageForm": "Injection",
+          "strength": "40mg/0.4ml",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Injection",
+          "strength": "60mg/0.6ml",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-warfarin",
+      "medicineName": "Warfarin",
+      "aliases": [
+        "warfarin sodium"
+      ],
+      "therapeuticCategory": "Medicines affecting coagulation",
+      "sectionCode": "10.2",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "1mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "2mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "5mg",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-insulin-regular",
+      "medicineName": "Insulin (Soluble / Regular)",
+      "aliases": [
+        "insulin",
+        "human insulin",
+        "regular insulin"
+      ],
+      "therapeuticCategory": "Medicines used in Diabetes",
+      "sectionCode": "18.5.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Injection",
+          "strength": "40 IU/ml",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Injection",
+          "strength": "100 IU/ml",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-insulin-glargine",
+      "medicineName": "Insulin Glargine",
+      "aliases": [
+        "glargine"
+      ],
+      "therapeuticCategory": "Medicines used in Diabetes (NLEM 2022 Addition)",
+      "sectionCode": "18.5.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Injection",
+          "strength": "100 IU/ml",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-doxycycline",
+      "medicineName": "Doxycycline",
+      "aliases": [
+        "doxycycline hyclate"
+      ],
+      "therapeuticCategory": "Anti-infective Medicines — Tetracyclines",
+      "sectionCode": "6.2.2",
+      "dosageForms": [
+        {
+          "dosageForm": "Capsule / Tablet",
+          "strength": "100mg",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-metronidazole",
+      "medicineName": "Metronidazole",
+      "therapeuticCategory": "Antiprotozoal / Antibacterial Medicines",
+      "sectionCode": "6.2.2",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "200mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "400mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Oral Liquid",
+          "strength": "200mg/5ml",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Injection",
+          "strength": "500mg/100ml",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-levofloxacin",
+      "medicineName": "Levofloxacin",
+      "therapeuticCategory": "Anti-infective Medicines — Fluoroquinolones",
+      "sectionCode": "6.2.2",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "250mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "500mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "750mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Injection",
+          "strength": "500mg/100ml",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-clarithromycin",
+      "medicineName": "Clarithromycin",
+      "therapeuticCategory": "Anti-infective Medicines — Macrolides",
+      "sectionCode": "6.2.2",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "250mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "500mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Oral Liquid",
+          "strength": "125mg/5ml",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-pip-taz",
+      "medicineName": "Piperacillin + Tazobactam",
+      "aliases": [
+        "piperacillin"
+      ],
+      "therapeuticCategory": "Anti-infective Medicines — Penicillins",
+      "sectionCode": "6.2.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Powder for Injection",
+          "strength": "1g + 125mg",
+          "levelOfHealthcare": "T"
+        },
+        {
+          "dosageForm": "Powder for Injection",
+          "strength": "2g + 250mg",
+          "levelOfHealthcare": "T"
+        },
+        {
+          "dosageForm": "Powder for Injection",
+          "strength": "4g + 500mg",
+          "levelOfHealthcare": "T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-vancomycin",
+      "medicineName": "Vancomycin",
+      "therapeuticCategory": "Anti-infective Medicines — Glycopeptides",
+      "sectionCode": "6.2.2",
+      "dosageForms": [
+        {
+          "dosageForm": "Powder for Injection",
+          "strength": "250mg",
+          "levelOfHealthcare": "T"
+        },
+        {
+          "dosageForm": "Powder for Injection",
+          "strength": "500mg",
+          "levelOfHealthcare": "T"
+        },
+        {
+          "dosageForm": "Powder for Injection",
+          "strength": "1g",
+          "levelOfHealthcare": "T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-linezolid",
+      "medicineName": "Linezolid",
+      "therapeuticCategory": "Anti-infective Medicines — Oxazolidinones",
+      "sectionCode": "6.2.2",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "600mg",
+          "levelOfHealthcare": "T"
+        },
+        {
+          "dosageForm": "Injection",
+          "strength": "2mg/ml (300ml)",
+          "levelOfHealthcare": "T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-acyclovir",
+      "medicineName": "Acyclovir",
+      "aliases": [
+        "aciclovir"
+      ],
+      "therapeuticCategory": "Antiviral Medicines",
+      "sectionCode": "6.4.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "200mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "400mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Powder for Injection",
+          "strength": "250mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Powder for Injection",
+          "strength": "500mg",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-prednisolone",
+      "medicineName": "Prednisolone",
+      "therapeuticCategory": "Hormones / Corticosteroids",
+      "sectionCode": "18.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "5mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "10mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "20mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Oral Liquid",
+          "strength": "5mg/5ml",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-dexamethasone",
+      "medicineName": "Dexamethasone",
+      "therapeuticCategory": "Hormones / Corticosteroids",
+      "sectionCode": "18.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "0.5mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Injection",
+          "strength": "4mg/ml",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-formoterol-budesonide",
+      "medicineName": "Budesonide + Formoterol",
+      "aliases": [
+        "formoterol"
+      ],
+      "therapeuticCategory": "Medicines acting on the Respiratory Tract",
+      "sectionCode": "25.1",
+      "dosageForms": [
+        {
+          "dosageForm": "DPI / MDI Inhaler",
+          "strength": "100mcg + 6mcg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "DPI / MDI Inhaler",
+          "strength": "200mcg + 6mcg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "DPI / MDI Inhaler",
+          "strength": "400mcg + 6mcg",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-tiotropium",
+      "medicineName": "Tiotropium",
+      "aliases": [
+        "tiotropium bromide"
+      ],
+      "therapeuticCategory": "Medicines acting on the Respiratory Tract",
+      "sectionCode": "25.1",
+      "dosageForms": [
+        {
+          "dosageForm": "DPI / MDI Inhaler",
+          "strength": "18mcg/dose",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "MDI Inhaler",
+          "strength": "9mcg/dose",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-valproate",
+      "medicineName": "Sodium Valproate",
+      "aliases": [
+        "valproic acid",
+        "valproate"
+      ],
+      "therapeuticCategory": "Anticonvulsants / Antiepileptics",
+      "sectionCode": "5.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "200mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "300mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "500mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Oral Liquid",
+          "strength": "200mg/5ml",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-carbamazepine",
+      "medicineName": "Carbamazepine",
+      "therapeuticCategory": "Anticonvulsants / Antiepileptics",
+      "sectionCode": "5.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "100mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "200mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "400mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Oral Liquid",
+          "strength": "100mg/5ml",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-escitalopram",
+      "medicineName": "Escitalopram",
+      "therapeuticCategory": "Medicines used in Mental & Behavioural Disorders",
+      "sectionCode": "24.2",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "5mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "10mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "20mg",
+          "levelOfHealthcare": "S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-domperidone",
+      "medicineName": "Domperidone",
+      "therapeuticCategory": "Gastrointestinal Medicines — Antiemetics",
+      "sectionCode": "17.2",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "10mg",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Oral Liquid",
+          "strength": "1mg/ml",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-folic-acid",
+      "medicineName": "Folic Acid",
+      "therapeuticCategory": "Antianemia Medicines / Vitamins",
+      "sectionCode": "10.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "5mg",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-mupirocin",
+      "medicineName": "Mupirocin",
+      "therapeuticCategory": "Dermatological Medicines (Topical)",
+      "sectionCode": "13.2",
+      "dosageForms": [
+        {
+          "dosageForm": "Ointment",
+          "strength": "2% w/w",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-clotrimazole",
+      "medicineName": "Clotrimazole",
+      "therapeuticCategory": "Dermatological Medicines (Antifungal)",
+      "sectionCode": "13.1",
+      "dosageForms": [
+        {
+          "dosageForm": "Cream",
+          "strength": "1% w/w",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Pessary",
+          "strength": "100mg",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-timolol",
+      "medicineName": "Timolol",
+      "aliases": [
+        "timolol maleate"
+      ],
+      "therapeuticCategory": "Ophthalmological Preparations",
+      "sectionCode": "21.4",
+      "dosageForms": [
+        {
+          "dosageForm": "Eye Drops",
+          "strength": "0.25%",
+          "levelOfHealthcare": "P, S, T"
+        },
+        {
+          "dosageForm": "Eye Drops",
+          "strength": "0.5%",
+          "levelOfHealthcare": "P, S, T"
+        }
+      ]
+    },
+    {
+      "id": "nlem-methotrexate",
+      "medicineName": "Methotrexate",
+      "therapeuticCategory": "Antineoplastic / Immunosuppressant Medicines",
+      "sectionCode": "8.2",
+      "dosageForms": [
+        {
+          "dosageForm": "Tablet",
+          "strength": "2.5mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "5mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "7.5mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Tablet",
+          "strength": "10mg",
+          "levelOfHealthcare": "S, T"
+        },
+        {
+          "dosageForm": "Injection",
+          "strength": "50mg/ml",
+          "levelOfHealthcare": "T"
+        }
+      ]
+    }
+  ],
+  "companyProfile": {
+    "companyName": "Aurelia Lifesciences Pvt. Ltd.",
+    "cin": "U24230MH2014PTC258412",
+    "gstin": "27AABCA4821F1Z8",
+    "manufacturingLicenseNo": "MH/1024-B/2021 (WHO-GMP)",
+    "corporateAddress": "Plot C-42, TTC Industrial Area, MIDC Pawne, Navi Mumbai, Maharashtra 400705",
+    "regulatoryOfficerName": "Dr. Kavita Deshmukh",
+    "regulatoryOfficerEmail": "regulatory.affairs@aurelialifesciences.in",
+    "existingFormulations": [
+      {
+        "id": "ex-1",
+        "medicineName": "Atorvastatin",
+        "dosageForm": "Tablet",
+        "strength": "10mg",
+        "brandName": "AtorvaCare-10",
+        "marketingStatus": "Active"
+      },
+      {
+        "id": "ex-2",
+        "medicineName": "Metformin",
+        "dosageForm": "Tablet",
+        "strength": "500mg",
+        "brandName": "GlycoNorm-500",
+        "marketingStatus": "Active"
+      },
+      {
+        "id": "ex-3",
+        "medicineName": "Paracetamol",
+        "dosageForm": "Tablet",
+        "strength": "650mg",
+        "brandName": "PyroRel-650",
+        "marketingStatus": "Active"
+      },
+      {
+        "id": "ex-4",
+        "medicineName": "Azithromycin",
+        "dosageForm": "Tablet",
+        "strength": "500mg",
+        "brandName": "AzithroMax-500",
+        "marketingStatus": "Active"
+      }
+    ],
+    "updatedAt": "2026-11-19T07:02:03.850Z"
+  },
+  "syncLogs": [
+    {
+      "id": "sync-1795071445429",
+      "triggeredBy": "scheduled_10am_ist",
+      "timestamp": "2026-11-19T06:57:25.429Z",
+      "status": "success",
+      "circularsFetched": 15,
+      "authorityMinutesFetched": 8,
+      "expertNotesFetched": 10,
+      "newCeilingPricesFound": 0,
+      "newRetailPricesFound": 0,
+      "message": "Synced all 3 NPPA portals. 0 new log(s), 0 ceiling update(s), 0 retail circular(s)."
+    },
+    {
+      "id": "sync-1795071279068",
+      "triggeredBy": "manual",
+      "timestamp": "2026-11-19T06:54:39.068Z",
+      "status": "success",
+      "circularsFetched": 15,
+      "authorityMinutesFetched": 8,
+      "expertNotesFetched": 10,
+      "newCeilingPricesFound": 0,
+      "newRetailPricesFound": 0,
+      "message": "Synced all 3 NPPA portals. 33 new log(s), 0 ceiling update(s), 0 retail circular(s)."
+    },
+    {
+      "id": "sync-init-1",
+      "triggeredBy": "scheduled_10am_ist",
+      "timestamp": "2026-11-18T10:00:00+05:30",
+      "status": "success",
+      "circularsFetched": 3,
+      "authorityMinutesFetched": 2,
+      "expertNotesFetched": 2,
+      "newCeilingPricesFound": 1,
+      "newRetailPricesFound": 1,
+      "message": "Baseline NPPA master & 10:00 AM IST scheduled registry initialized."
+    }
+  ],
+  "lastDailyRunDateIst": "2026-11-19",
+  "ceilingPriceHistory": [
+    {
+      "id": "cph-1795071217442-48",
+      "ceilingPriceId": "cp-6",
+      "medicineName": "Telmisartan",
+      "strength": "40mg",
+      "dosageFormat": "Tablet",
+      "changeType": "revised",
+      "previousCeilingPrice": 6.72,
+      "newCeilingPrice": 6.95,
+      "notificationNumber": "S.O. 4950(E)",
+      "notificationDate": "2026-11-19",
+      "source": "notification_parser",
+      "changedBy": "admin",
+      "notes": "Ceiling price updated from ₹6.72 to ₹6.95 via S.O. 4950(E).",
+      "timestamp": "2026-11-19T06:53:37.442Z"
+    },
+    {
+      "id": "cph-1795071217441-305",
+      "ceilingPriceId": "cp-1",
+      "medicineName": "Atorvastatin",
+      "strength": "10mg",
+      "dosageFormat": "Tablet",
+      "changeType": "revised",
+      "previousCeilingPrice": 5.56,
+      "newCeilingPrice": 5.82,
+      "notificationNumber": "S.O. 4950(E)",
+      "notificationDate": "2026-11-19",
+      "source": "notification_parser",
+      "changedBy": "admin",
+      "notes": "Ceiling price updated from ₹5.56 to ₹5.82 via S.O. 4950(E).",
+      "timestamp": "2026-11-19T06:53:37.441Z"
+    },
+    {
+      "id": "cph-1",
+      "ceilingPriceId": "cp-12",
+      "medicineName": "Pantoprazole",
+      "strength": "40mg",
+      "dosageFormat": "Injection",
+      "changeType": "revised",
+      "previousCeilingPrice": 43.1,
+      "newCeilingPrice": 44.32,
+      "notificationNumber": "S.O. 4892(E)",
+      "notificationDate": "2026-11-11",
+      "source": "scheduled_10am_ist",
+      "changedBy": "NPPA 10:00 AM IST Scheduler",
+      "notes": "Ceiling price revised per S.O. 4892(E) notification.",
+      "timestamp": "2026-11-11T10:00:12+05:30"
+    },
+    {
+      "id": "cph-2",
+      "ceilingPriceId": "cp-10",
+      "medicineName": "Sitagliptin",
+      "strength": "100mg",
+      "dosageFormat": "Tablet",
+      "changeType": "created",
+      "previousCeilingPrice": null,
+      "newCeilingPrice": 14.9,
+      "notificationNumber": "S.O. 4620(E)",
+      "notificationDate": "2026-10-28",
+      "source": "scheduled_10am_ist",
+      "changedBy": "NPPA 10:00 AM IST Scheduler",
+      "notes": "New NLEM 2022 ceiling price added from S.O. 4620(E).",
+      "timestamp": "2026-10-28T10:00:08+05:30"
+    },
+    {
+      "id": "cph-3",
+      "ceilingPriceId": "cp-11",
+      "medicineName": "Paracetamol",
+      "strength": "650mg",
+      "dosageFormat": "Tablet",
+      "changeType": "revised",
+      "previousCeilingPrice": 1.91,
+      "newCeilingPrice": 1.98,
+      "notificationNumber": "S.O. 4620(E)",
+      "notificationDate": "2026-10-28",
+      "source": "scheduled_10am_ist",
+      "changedBy": "NPPA 10:00 AM IST Scheduler",
+      "notes": "Ceiling price revised from ₹1.91 to ₹1.98 per tablet.",
+      "timestamp": "2026-10-28T10:00:09+05:30"
+    }
+  ],
+  "customCalendarEvents": [],
+  "soTrackingRecords": [
+    {
+      "id": "so-SO4950E-2026-11-19",
+      "soNumber": "S.O. 4950(E)",
+      "soDate": "2026-11-19",
+      "sourceType": "daily_nppa_sync",
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "ceilingCount": 2,
+      "retailCount": 0,
+      "importedBy": "NPPA Registry Baseline",
+      "importedAt": "2026-11-19T06:53:37.441Z",
+      "notes": "Scheduled formulation ceiling price notification (Atorvastatin)."
+    },
+    {
+      "id": "so-SO4895E-2026-11-12",
+      "soNumber": "S.O. 4895(E)",
+      "soDate": "2026-11-12",
+      "sourceType": "daily_nppa_sync",
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "ceilingCount": 0,
+      "retailCount": 1,
+      "importedBy": "NPPA Registry Baseline",
+      "importedAt": "2026-11-12T10:00:00+05:30",
+      "notes": "Form 1A retail price circular (Glimepiride 2mg + Metformin HCl 500mg (SR) Tablet)."
+    },
+    {
+      "id": "so-SO4892E-2026-11-11",
+      "soNumber": "S.O. 4892(E)",
+      "soDate": "2026-11-11",
+      "sourceType": "daily_nppa_sync",
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "ceilingCount": 1,
+      "retailCount": 0,
+      "importedBy": "NPPA Registry Baseline",
+      "importedAt": "2026-11-11T10:00:00+05:30",
+      "notes": "Scheduled formulation ceiling price notification (Pantoprazole)."
+    },
+    {
+      "id": "so-SO4620E-2026-10-28",
+      "soNumber": "S.O. 4620(E)",
+      "soDate": "2026-10-28",
+      "sourceType": "daily_nppa_sync",
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "ceilingCount": 2,
+      "retailCount": 0,
+      "importedBy": "NPPA Registry Baseline",
+      "importedAt": "2026-10-28T10:00:00+05:30",
+      "notes": "Scheduled formulation ceiling price notification (Sitagliptin)."
+    },
+    {
+      "id": "so-SO4550E-2026-10-22",
+      "soNumber": "S.O. 4550(E)",
+      "soDate": "2026-10-22",
+      "sourceType": "daily_nppa_sync",
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "ceilingCount": 0,
+      "retailCount": 1,
+      "importedBy": "NPPA Registry Baseline",
+      "importedAt": "2026-10-22T10:00:00+05:30",
+      "notes": "Form 1A retail price circular (Dapagliflozin 10mg + Metformin HCl 500mg (ER) Tablet)."
+    },
+    {
+      "id": "so-SO4219E-2026-10-05",
+      "soNumber": "S.O. 4219(E)",
+      "soDate": "2026-10-05",
+      "sourceType": "daily_nppa_sync",
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "ceilingCount": 0,
+      "retailCount": 1,
+      "importedBy": "NPPA Registry Baseline",
+      "importedAt": "2026-10-05T10:00:00+05:30",
+      "notes": "Form 1A retail price circular (Rosuvastatin 20mg + Aspirin 75mg Capsule)."
+    },
+    {
+      "id": "so-SO4105E-2026-09-24",
+      "soNumber": "S.O. 4105(E)",
+      "soDate": "2026-09-24",
+      "sourceType": "daily_nppa_sync",
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "ceilingCount": 2,
+      "retailCount": 0,
+      "importedBy": "NPPA Registry Baseline",
+      "importedAt": "2026-09-24T10:00:00+05:30",
+      "notes": "Scheduled formulation ceiling price notification (Amoxicillin + Clavulanic acid)."
+    },
+    {
+      "id": "so-SO3812E-2026-09-09",
+      "soNumber": "S.O. 3812(E)",
+      "soDate": "2026-09-09",
+      "sourceType": "daily_nppa_sync",
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "ceilingCount": 0,
+      "retailCount": 1,
+      "importedBy": "NPPA Registry Baseline",
+      "importedAt": "2026-09-09T10:00:00+05:30",
+      "notes": "Form 1A retail price circular (Sitagliptin 50mg + Metformin Hydrochloride 500mg Tablet)."
+    },
+    {
+      "id": "so-SO3398E-2026-08-18",
+      "soNumber": "S.O. 3398(E)",
+      "soDate": "2026-08-18",
+      "sourceType": "daily_nppa_sync",
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "ceilingCount": 0,
+      "retailCount": 1,
+      "importedBy": "NPPA Registry Baseline",
+      "importedAt": "2026-08-18T10:00:00+05:30",
+      "notes": "Form 1A retail price circular (Telmisartan 40mg + Amlodipine 5mg + Hydrochlorothiazide 12.5mg Tablet)."
+    },
+    {
+      "id": "so-SO3418E-2026-08-12",
+      "soNumber": "S.O. 3418(E)",
+      "soDate": "2026-08-12",
+      "sourceType": "daily_nppa_sync",
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "ceilingCount": 1,
+      "retailCount": 0,
+      "importedBy": "NPPA Registry Baseline",
+      "importedAt": "2026-08-12T10:00:00+05:30",
+      "notes": "Scheduled formulation ceiling price notification (Amlodipine)."
+    },
+    {
+      "id": "so-SO3241E-2026-07-24",
+      "soNumber": "S.O. 3241(E)",
+      "soDate": "2026-07-24",
+      "sourceType": "daily_nppa_sync",
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "ceilingCount": 0,
+      "retailCount": 1,
+      "importedBy": "NPPA Registry Baseline",
+      "importedAt": "2026-07-24T10:00:00+05:30",
+      "notes": "Form 1A retail price circular (Atorvastatin 10mg + Clopidogrel 75mg Capsule)."
+    },
+    {
+      "id": "so-SO1642E-2026-04-01",
+      "soNumber": "S.O. 1642(E)",
+      "soDate": "2026-04-01",
+      "sourceType": "daily_nppa_sync",
+      "sourceUrl": "https://nppa.gov.in/en/view_more?id=4",
+      "ceilingCount": 4,
+      "retailCount": 0,
+      "importedBy": "NPPA Registry Baseline",
+      "importedAt": "2026-04-01T10:00:00+05:30",
+      "notes": "Scheduled formulation ceiling price notification (Atorvastatin)."
+    }
+  ]
+}
