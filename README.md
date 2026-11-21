@@ -68,3 +68,7 @@ Configure these in **Render Dashboard → Environment**:
 | `DATA_DIR` | With Disk | Directory path for database JSON storage (e.g. `/var/data`; defaults to `./data`) |
 | `GEMINI_API_KEY` | Optional | Google Gemini API key for AI Assistant, semantic search, and PDF-to-data conversion (server-side only) |
 | `PORT` | Auto | Injected automatically by Render (defaults to `3000` locally) |
+
+## Supabase persistent storage
+
+See [Supabase setup](docs/SUPABASE_SETUP.md) for server configuration, explicit data import, and deployment verification. Back up live data before redeployment.

@@ -255,7 +255,7 @@ function buildInitialState(): DatabaseState {
 let cachedState: DatabaseState | null = null;
 let cachedDbPath: string | null = null;
 
-export function loadDb(): DatabaseState {
+function loadLocalDb(): DatabaseState {
   const dataDir = getDataDir();
   const dbPath = getDbFilePath();
   if (cachedState && cachedDbPath === dbPath) return cachedState;
@@ -308,7 +308,7 @@ export function loadDb(): DatabaseState {
       }
       cachedState = parsed;
       cachedDbPath = dbPath;
-      if (mutated) saveDb(cachedState);
+      if (mutated) saveLocalDb(cachedState);
       return cachedState;
     } catch {
       // fall through to re-seed if file corrupted
@@ -316,11 +316,11 @@ export function loadDb(): DatabaseState {
   }
   cachedState = buildInitialState();
   cachedDbPath = dbPath;
-  saveDb(cachedState);
+  saveLocalDb(cachedState);
   return cachedState;
 }
 
-export function saveDb(state: DatabaseState): void {
+function saveLocalDb(state: DatabaseState): void {
   const dataDir = getDataDir();
   const dbPath = getDbFilePath();
   cachedState = state;
@@ -331,4 +331,100 @@ export function saveDb(state: DatabaseState): void {
   const tmp = `${dbPath}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(state, null, 2), 'utf8');
   fs.renameSync(tmp, dbPath);
+}
+
+// Supabase is server-only. Keep this key out of VITE_* variables and the browser.
+const revisions = new WeakMap<DatabaseState, number>();
+export class StorageError extends Error {
+  status: number;
+  constructor(message: string, status = 503) {
+    super(message);
+    this.status = status;
+  }
+}
+
+function remoteConfig(): { url: string; key: string } | null {
+  const url = process.env.SUPABASE_URL?.trim();
+  const key = process.env.SUPABASE_SECRET_KEY?.trim();
+  if (!url && !key) return null;
+  if (!url || !key) throw new StorageError('Configure both SUPABASE_URL and SUPABASE_SECRET_KEY.');
+  const parsed = new URL(url);
+  if (parsed.protocol !== 'https:') throw new StorageError('SUPABASE_URL must use HTTPS.');
+  return { url: parsed.origin, key };
+}
+
+async function remoteRequest(query: string, method = 'GET', body?: unknown): Promise<any[]> {
+  const config = remoteConfig()!;
+  let response: Response;
+  try {
+    response = await fetch(`${config.url}/rest/v1/dpco_app_state${query}`, {
+      method,
+      headers: {
+        apikey: config.key,
+        // Legacy service_role JWTs need Authorization; modern secret keys use apikey.
+        ...(config.key.startsWith('eyJ') ? { Authorization: `Bearer ${config.key}` } : {}),
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: AbortSignal.timeout(15000),
+    });
+  } catch {
+    throw new StorageError('Database unavailable. Your changes have not been confirmed saved. Please retry.');
+  }
+  if (!response.ok) {
+    // Never return database responses, credentials, or request URLs to clients.
+    throw new StorageError(`Database request failed (HTTP ${response.status}). Contact the administrator.`);
+  }
+  return response.json();
+}
+
+function validateState(value: unknown): asserts value is DatabaseState {
+  const state = value as DatabaseState;
+  const arrayFields = ['users', 'ceilingPrices', 'retailPrices', 'nlem2022',
+    'ceilingPriceHistory', 'nppaLogs', 'syncLogs', 'customCalendarEvents', 'soTrackingRecords'] as const;
+  if (!state || arrayFields.some(field => !Array.isArray(state[field])) ||
+      !state.companyProfile || typeof state.companyProfile !== 'object') {
+    throw new StorageError('Database contents are invalid. Restore a verified backup; no records were replaced.');
+  }
+}
+
+export async function loadDb(): Promise<DatabaseState> {
+  if (!remoteConfig()) return loadLocalDb();
+  const rows = await remoteRequest('?id=eq.main&select=payload,revision');
+  if (rows.length !== 1) {
+    throw new StorageError('Supabase is empty. Run the explicit database import before starting the app.');
+  }
+  const state = rows[0].payload;
+  validateState(state);
+  revisions.set(state, Number(rows[0].revision));
+  return state;
+}
+
+export async function saveDb(state: DatabaseState): Promise<void> {
+  if (!remoteConfig()) { saveLocalDb(state); return; }
+  validateState(state);
+  const revision = revisions.get(state);
+  if (revision === undefined) throw new StorageError('Reload records before saving.', 409);
+  const rows = await remoteRequest(`?id=eq.main&revision=eq.${revision}`, 'PATCH', {
+    payload: state, revision: revision + 1, updated_at: new Date().toISOString(),
+  });
+  if (rows.length !== 1) throw new StorageError('Another operation updated these records. Refresh and retry your change.', 409);
+  revisions.set(state, revision + 1);
+}
+
+export async function importDatabaseFile(filePath: string): Promise<void> {
+  if (!remoteConfig()) throw new StorageError('Supabase configuration is required for import.');
+  const state = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  validateState(state);
+  // INSERT, never UPSERT: a populated database must never be overwritten by a deployment.
+  await remoteRequest('', 'POST', { id: 'main', payload: state, revision: 1 });
+}
+
+export async function initializeStorage(): Promise<void> {
+  if (remoteConfig() && !process.env.SESSION_SECRET?.trim()) {
+    throw new StorageError('A persistent SESSION_SECRET is required with Supabase.');
+  }
+  const state = await loadDb();
+  if (ensureConfiguredAdmin(state)) await saveDb(state);
 }
