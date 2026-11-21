@@ -590,6 +590,7 @@ export async function ensureSeeded(): Promise<void> {
           .onConflictDoNothing();
       } catch (err) {
         seedPromise = null;
+        console.error('Failed to initialize compliance PostgreSQL datastore:', err);
         throw new Error('Failed to initialize compliance PostgreSQL datastore.', { cause: err });
       }
     })();

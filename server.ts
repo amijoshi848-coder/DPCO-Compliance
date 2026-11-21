@@ -168,12 +168,18 @@ async function requireAuth(
 
   try {
     // 1. Try Firebase ID token first
+    let decodedFirebase: { uid: string; email?: string; name?: string } | null = null;
     try {
-      const decoded = await adminAuth.verifyIdToken(token);
+      decodedFirebase = await adminAuth.verifyIdToken(token);
+    } catch {
+      decodedFirebase = null;
+    }
+
+    if (decodedFirebase) {
       const user = await getOrCreateFirebaseUser({
-        uid: decoded.uid,
-        email: decoded.email || '',
-        displayName: decoded.name,
+        uid: decodedFirebase.uid,
+        email: decodedFirebase.email || '',
+        displayName: decodedFirebase.name,
       });
       if (!user.active) {
         res.status(403).json({ error: 'Account is disabled or not permitted.' });
@@ -182,8 +188,6 @@ async function requireAuth(
       req.authUser = user;
       next();
       return;
-    } catch {
-      // Fall through to legacy HMAC session token verification
     }
 
     const verified = verifySessionToken(token);
@@ -198,7 +202,8 @@ async function requireAuth(
     }
     req.authUser = user;
     next();
-  } catch {
+  } catch (err) {
+    console.error('Authentication verification failed:', err);
     res.status(500).json({ error: 'Authentication verification failed.' });
   }
 }
@@ -212,6 +217,7 @@ function requireAdmin(req: AuthedRequest, res: Response, next: NextFunction): vo
 }
 
 function handleRouteError(res: Response, err: unknown, fallbackMessage: string): void {
+  console.error(`[API Error] ${fallbackMessage}`, err);
   const status =
     err instanceof Error && typeof (err as Error & { statusCode?: number }).statusCode === 'number'
       ? (err as Error & { statusCode: number }).statusCode
