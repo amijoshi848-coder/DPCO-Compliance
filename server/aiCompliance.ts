@@ -7,7 +7,7 @@ import type {
   Form1CheckResult,
   PdfConversionResult,
 } from '../src/types/compliance.ts';
-import { loadDb } from './storage.ts';
+import { loadAiRegistrySnapshot } from '../src/db/repository.ts';
 
 const GEMINI_MODEL = 'gemini-4-hydrogen';
 
@@ -63,8 +63,8 @@ export function formatGeminiError(err: unknown): { status: number; message: stri
   };
 }
 
-function buildRegistryContext(userQuery: string): string {
-  const db = loadDb();
+async function buildRegistryContext(userQuery: string): Promise<string> {
+  const db = await loadAiRegistrySnapshot();
   const tokens = userQuery
     .toLowerCase()
     .split(/[^a-z0-9]+/)
@@ -136,7 +136,7 @@ export async function askComplianceAssistant(params: {
   useWebSearch: boolean;
 }): Promise<{ reply: string; sources: AiGroundingSource[] }> {
   const ai = getGeminiClient();
-  const context = buildRegistryContext(params.message);
+  const context = await buildRegistryContext(params.message);
 
   const systemInstruction = `You are an expert Indian pharmaceutical regulatory compliance advisor specializing in NPPA (National Pharmaceutical Pricing Authority), DPCO 2013 (Drugs Prices Control Order), NLEM 2022, Form I (new drug price fixation for existing manufacturers), Form 1A (retail price benchmark filing), and Form V price list compliance.
 Answer clearly, accurately, and concisely using structured bullet points where helpful.
@@ -295,7 +295,7 @@ export async function aiGenerateForm1Brief(
   checkResult: Form1CheckResult
 ): Promise<AiForm1Brief> {
   const ai = getGeminiClient();
-  const db = loadDb();
+  const db = await loadAiRegistrySnapshot();
 
   const matchingRetail = db.retailPrices
     .filter((r) =>

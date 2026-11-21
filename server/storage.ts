@@ -222,6 +222,40 @@ function ensureConfiguredAdmin(db: DatabaseState): boolean {
 }
 
 function buildInitialState(): DatabaseState {
+  const bundledPath = path.resolve(process.cwd(), 'data', 'nppa_compliance_db.json');
+  if (fs.existsSync(bundledPath)) {
+    try {
+      const bundled = JSON.parse(fs.readFileSync(bundledPath, 'utf8')) as Partial<DatabaseState>;
+      const seeded: DatabaseState = {
+        users: [],
+        ceilingPrices: Array.isArray(bundled.ceilingPrices)
+          ? bundled.ceilingPrices
+          : INITIAL_CEILING_PRICES,
+        ceilingPriceHistory: Array.isArray(bundled.ceilingPriceHistory)
+          ? bundled.ceilingPriceHistory
+          : INITIAL_CEILING_HISTORY,
+        retailPrices: Array.isArray(bundled.retailPrices)
+          ? bundled.retailPrices
+          : INITIAL_RETAIL_PRICES,
+        nppaLogs: Array.isArray(bundled.nppaLogs) ? bundled.nppaLogs : INITIAL_NPPA_LOGS,
+        nlem2022: Array.isArray(bundled.nlem2022) ? bundled.nlem2022 : INITIAL_NLEM_2022,
+        companyProfile: bundled.companyProfile || INITIAL_COMPANY_PROFILE,
+        syncLogs: Array.isArray(bundled.syncLogs) ? bundled.syncLogs : [],
+        customCalendarEvents: Array.isArray(bundled.customCalendarEvents)
+          ? bundled.customCalendarEvents
+          : [],
+        soTrackingRecords: Array.isArray(bundled.soTrackingRecords)
+          ? bundled.soTrackingRecords
+          : buildSeedSoTracking(INITIAL_CEILING_PRICES, INITIAL_RETAIL_PRICES),
+        lastDailyRunDateIst: bundled.lastDailyRunDateIst || '2026-11-18',
+      };
+      ensureConfiguredAdmin(seeded);
+      return seeded;
+    } catch {
+      // fall back to minimal initial state
+    }
+  }
+
   const state: DatabaseState = {
     users: [],
     ceilingPrices: INITIAL_CEILING_PRICES,
@@ -305,7 +339,75 @@ export function loadDb(): DatabaseState {
           parsed.nppaLogs = cleanedLogs;
           mutated = true;
         }
+
+        // Migrate legacy truncated base64 IDs (e.g. aHR0cHM6Ly9ucHBhLm) & deduplicate nppaLogs
+        const byKey = new Map<string, NppaDocumentLog>();
+        const seenLogIds = new Set<string>();
+        for (const log of parsed.nppaLogs) {
+          const dedupKey = (
+            log.pdfUrl || `${log.sourceType}|${log.title}|${log.publishedDate}`
+          ).toLowerCase();
+          let nextId = log.id;
+          if (
+            !nextId ||
+            nextId.includes('aHR0cHM') ||
+            seenLogIds.has(nextId)
+          ) {
+            const hash = crypto
+              .createHash('sha256')
+              .update(dedupKey)
+              .digest('base64url')
+              .slice(0, 16);
+            nextId = `live-${log.sourceType}-${hash}`;
+            let disambig = 1;
+            while (seenLogIds.has(nextId)) {
+              nextId = `live-${log.sourceType}-${hash}-${disambig++}`;
+            }
+            mutated = true;
+          }
+          const prev = byKey.get(dedupKey);
+          if (!prev) {
+            seenLogIds.add(nextId);
+            byKey.set(dedupKey, nextId === log.id ? log : { ...log, id: nextId });
+          } else {
+            // Duplicate log entry for the same URL/title+date: merge tracking metadata & drop duplicate
+            if (log.soImportedAt && !prev.soImportedAt) {
+              prev.soImportedAt = log.soImportedAt;
+              prev.importedEntryCount = log.importedEntryCount;
+            }
+            mutated = true;
+          }
+        }
+        const dedupedLogs = Array.from(byKey.values());
+        if (dedupedLogs.length !== parsed.nppaLogs.length) {
+          parsed.nppaLogs = dedupedLogs;
+          mutated = true;
+        } else if (mutated) {
+          parsed.nppaLogs = dedupedLogs;
+        }
       }
+
+      // Guarantee unique IDs across all master collections loaded from disk
+      for (const collection of [
+        parsed.ceilingPrices,
+        parsed.ceilingPriceHistory,
+        parsed.retailPrices,
+        parsed.soTrackingRecords,
+        parsed.nlem2022,
+        parsed.customCalendarEvents,
+      ]) {
+        if (!Array.isArray(collection)) continue;
+        const seen = new Set<string>();
+        for (let i = 0; i < collection.length; i++) {
+          const item = collection[i] as { id?: string };
+          if (!item || !item.id || seen.has(item.id)) {
+            item.id = `${item.id || 'item'}-${i}`;
+            mutated = true;
+          }
+          seen.add(item.id);
+        }
+      }
+
       cachedState = parsed;
       cachedDbPath = dbPath;
       if (mutated) saveDb(cachedState);

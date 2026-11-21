@@ -17,6 +17,7 @@ export interface AllowedUserRecord extends AuthUser {
 
 export interface CeilingPriceEntry {
   id: string;
+  formulationKey?: string;
   medicineName: string;
   composition: string;
   strength: string;
@@ -30,6 +31,7 @@ export interface CeilingPriceEntry {
   gstDefault: number;
   sourceUrl: string;
   updatedAt: string;
+  supersededCount?: number;
 }
 
 export interface RetailPriceEntry {
@@ -49,9 +51,12 @@ export interface RetailPriceEntry {
 
 export type NppaSourceType = 'circular' | 'authority_minutes' | 'expert_committee';
 
+export type NppaLogCategory = 'ceiling_price' | 'retail_price' | 'meeting_minutes';
+
 export interface NppaDocumentLog {
   id: string;
   sourceType: NppaSourceType;
+  logCategory?: NppaLogCategory;
   title: string;
   referenceNumber: string;
   publishedDate: string;
@@ -62,6 +67,14 @@ export interface NppaDocumentLog {
   isLiveFetched: boolean;
   soImportedAt?: string;
   importedEntryCount?: number;
+}
+
+export interface NppaGroupedLogsResponse {
+  items: NppaDocumentLog[];
+  ceilingLogs: NppaDocumentLog[];
+  retailLogs: NppaDocumentLog[];
+  meetingMinutesLogs: NppaDocumentLog[];
+  syncLogs: SyncLogEntry[];
 }
 
 export interface NlemDosageOption {

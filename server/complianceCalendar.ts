@@ -1,10 +1,20 @@
 import type {
   CalendarEventCategory,
+  CeilingPriceEntry,
   ComplianceCalendarEvent,
   ComplianceCalendarResponse,
+  CustomCalendarEvent,
+  NppaDocumentLog,
+  RetailPriceEntry,
 } from '../src/types/compliance.ts';
 import { getIstDateAndTimeParts } from './nppaScraper.ts';
-import type { DatabaseState } from './storage.ts';
+
+export interface ComplianceCalendarInput {
+  nppaLogs: NppaDocumentLog[];
+  ceilingPrices: CeilingPriceEntry[];
+  retailPrices: RetailPriceEntry[];
+  customCalendarEvents: CustomCalendarEvent[];
+}
 
 function addDaysIso(isoDate: string, days: number): string {
   const dt = new Date(`${isoDate}T00:00:00Z`);
@@ -76,7 +86,7 @@ function extractExplicitDatesFromText(text: string): string[] {
   return Array.from(new Set(found));
 }
 
-export function buildComplianceCalendar(db: DatabaseState): ComplianceCalendarResponse {
+export function buildComplianceCalendar(db: ComplianceCalendarInput): ComplianceCalendarResponse {
   const { istDate: todayIst } = getIstDateAndTimeParts();
   const events: ComplianceCalendarEvent[] = [];
 
@@ -344,6 +354,18 @@ export function buildComplianceCalendar(db: DatabaseState): ComplianceCalendarRe
       notes: custom.notes,
       isCustom: true,
     });
+  }
+
+  const seenEventIds = new Set<string>();
+  for (let i = 0; i < events.length; i++) {
+    const baseId = events[i].id || `cal-ev-${i}`;
+    let uniqueId = baseId;
+    let suffix = 1;
+    while (seenEventIds.has(uniqueId)) {
+      uniqueId = `${baseId}-${suffix++}`;
+    }
+    events[i].id = uniqueId;
+    seenEventIds.add(uniqueId);
   }
 
   events.sort((a, b) => a.date.localeCompare(b.date));

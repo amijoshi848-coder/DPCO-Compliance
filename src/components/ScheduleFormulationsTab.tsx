@@ -23,6 +23,7 @@ import type {
   CeilingPriceEntry,
   CeilingPriceHistoryEntry,
   NppaDocumentLog,
+  NppaLogCategory,
   NppaSourceType,
   PdfConversionResult,
   SoTrackingRecord,
@@ -33,7 +34,11 @@ interface ScheduleFormulationsTabProps {
   user: AuthUser;
   ceilingPrices: CeilingPriceEntry[];
   ceilingHistory: CeilingPriceHistoryEntry[];
+  supersededCount?: number;
   nppaLogs: NppaDocumentLog[];
+  ceilingLogs?: NppaDocumentLog[];
+  retailLogs?: NppaDocumentLog[];
+  meetingMinutesLogs?: NppaDocumentLog[];
   soTrackingRecords: SoTrackingRecord[];
   schedulerInfo: {
     scheduleTimeIst: string;
@@ -50,7 +55,11 @@ export default function ScheduleFormulationsTab({
   user,
   ceilingPrices,
   ceilingHistory,
+  supersededCount = 0,
   nppaLogs,
+  ceilingLogs,
+  retailLogs,
+  meetingMinutesLogs,
   soTrackingRecords,
   schedulerInfo,
   latestSync,
@@ -79,7 +88,10 @@ export default function ScheduleFormulationsTab({
       setPriceSubView(initialSubView);
     }
   }, [initialSubView]);
-  const [feedFilter, setFeedFilter] = useState<'all' | NppaSourceType>('all');
+  const [activeLogTab, setActiveLogTab] = useState<NppaLogCategory>('ceiling_price');
+  const [minutesSubFilter, setMinutesSubFilter] = useState<
+    'all' | 'authority_minutes' | 'expert_committee'
+  >('all');
   const [syncing, setSyncing] = useState(false);
   const [syncBanner, setSyncBanner] = useState<string | null>(null);
   const [downloadingLogId, setDownloadingLogId] = useState<string | null>(null);
@@ -132,6 +144,7 @@ export default function ScheduleFormulationsTab({
     ceilingPrice: '',
     notificationNumber: '',
     notificationDate: new Date().toISOString().slice(0, 10),
+    effectiveDate: new Date().toISOString().slice(0, 10),
     nlemSection: '',
     gstDefault: '12',
   });
@@ -141,6 +154,7 @@ export default function ScheduleFormulationsTab({
   // Admin manual log add
   const [showLogForm, setShowLogForm] = useState(false);
   const [logForm, setLogForm] = useState({
+    logCategory: 'ceiling_price' as NppaLogCategory,
     sourceType: 'circular' as NppaSourceType,
     title: '',
     referenceNumber: '',
@@ -161,12 +175,70 @@ export default function ScheduleFormulationsTab({
     );
   }, [ceilingPrices, searchQuery]);
 
+  const [visiblePriceCount, setVisiblePriceCount] = useState(50);
+  const [logSearchQuery, setLogSearchQuery] = useState('');
+  const [visibleLogCount, setVisibleLogCount] = useState(25);
+  const [backfilling, setBackfilling] = useState(false);
+
+  const groupedLogs = useMemo(() => {
+    if (
+      ceilingLogs !== undefined &&
+      retailLogs !== undefined &&
+      meetingMinutesLogs !== undefined &&
+      (ceilingLogs.length > 0 || retailLogs.length > 0 || meetingMinutesLogs.length > 0 || nppaLogs.length === 0)
+    ) {
+      return {
+        ceiling_price: ceilingLogs,
+        retail_price: retailLogs,
+        meeting_minutes: meetingMinutesLogs,
+      };
+    }
+    const cp: NppaDocumentLog[] = [];
+    const rp: NppaDocumentLog[] = [];
+    const mm: NppaDocumentLog[] = [];
+    for (const l of nppaLogs) {
+      if (l.logCategory === 'meeting_minutes' || l.sourceType === 'authority_minutes' || l.sourceType === 'expert_committee') {
+        mm.push(l);
+      } else if (
+        l.logCategory === 'retail_price' ||
+        (/(?:retail\s*price|form\s*1a|form\s*ia|new\s*drug)/i.test(`${l.title} ${l.summary}`) &&
+          !/ceiling\s*price/i.test(`${l.title} ${l.summary}`))
+      ) {
+        rp.push(l);
+      } else {
+        cp.push(l);
+      }
+    }
+    return {
+      ceiling_price: cp,
+      retail_price: rp,
+      meeting_minutes: mm,
+    };
+  }, [ceilingLogs, retailLogs, meetingMinutesLogs, nppaLogs]);
+
   const filteredLogs = useMemo(() => {
-    if (feedFilter === 'all') return nppaLogs;
-    return nppaLogs.filter((l) => l.sourceType === feedFilter);
-  }, [nppaLogs, feedFilter]);
+    const q = logSearchQuery.trim().toLowerCase();
+    const bucket = groupedLogs[activeLogTab] || [];
+    return bucket.filter((l) => {
+      if (
+        activeLogTab === 'meeting_minutes' &&
+        minutesSubFilter !== 'all' &&
+        l.sourceType !== minutesSubFilter
+      ) {
+        return false;
+      }
+      if (!q) return true;
+      return (
+        l.title.toLowerCase().includes(q) ||
+        l.referenceNumber.toLowerCase().includes(q) ||
+        l.publishedDate.toLowerCase().includes(q) ||
+        (l.summary || '').toLowerCase().includes(q)
+      );
+    });
+  }, [groupedLogs, activeLogTab, minutesSubFilter, logSearchQuery]);
 
   function openCreateModal() {
+    const today = new Date().toISOString().slice(0, 10);
     setEditingItem(null);
     setFormState({
       medicineName: '',
@@ -176,7 +248,8 @@ export default function ScheduleFormulationsTab({
       unitLabel: '1 Tablet',
       ceilingPrice: '',
       notificationNumber: 'S.O. ',
-      notificationDate: new Date().toISOString().slice(0, 10),
+      notificationDate: today,
+      effectiveDate: today,
       nlemSection: '12.4',
       gstDefault: '12',
     });
@@ -195,6 +268,7 @@ export default function ScheduleFormulationsTab({
       ceilingPrice: String(item.ceilingPrice),
       notificationNumber: item.notificationNumber,
       notificationDate: item.notificationDate,
+      effectiveDate: item.effectiveDate || item.notificationDate,
       nlemSection: item.nlemSection,
       gstDefault: String(item.gstDefault),
     });
@@ -255,12 +329,22 @@ export default function ScheduleFormulationsTab({
 
   async function handleAddLog(e: React.FormEvent) {
     e.preventDefault();
+    const resolvedSourceType: NppaSourceType =
+      logForm.logCategory === 'meeting_minutes'
+        ? logForm.sourceType === 'expert_committee'
+          ? 'expert_committee'
+          : 'authority_minutes'
+        : 'circular';
     await apiFetch('/api/nppa-logs', {
       method: 'POST',
-      body: JSON.stringify(logForm),
+      body: JSON.stringify({
+        ...logForm,
+        sourceType: resolvedSourceType,
+      }),
     });
     setShowLogForm(false);
     setLogForm({
+      logCategory: activeLogTab,
       sourceType: 'circular',
       title: '',
       referenceNumber: '',
@@ -268,6 +352,24 @@ export default function ScheduleFormulationsTab({
       summary: '',
     });
     await onRefresh();
+  }
+
+  async function handleBackfillSince2025() {
+    setBackfilling(true);
+    setSyncBanner(null);
+    setPdfFeedError(null);
+    try {
+      const res = await apiFetch<{ syncEntry: SyncLogEntry }>('/api/nppa-logs/backfill', {
+        method: 'POST',
+        body: JSON.stringify({ sinceDate: '2025-01-01' }),
+      });
+      setSyncBanner(res.syncEntry.message);
+      await onRefresh();
+    } catch (err) {
+      setPdfFeedError(err instanceof Error ? err.message : 'Unable to load 2025+ NPPA archive.');
+    } finally {
+      setBackfilling(false);
+    }
   }
 
   async function handleDeleteLog(id: string) {
@@ -456,10 +558,12 @@ export default function ScheduleFormulationsTab({
   const calcUnitMrp = (cp: number) => cp + cp * (gstRate / 100);
   const calcPackMrp = (cp: number) => calcUnitMrp(cp) * Math.max(1, packSize);
 
-  const sourceLabel = (type: NppaSourceType) => {
-    if (type === 'circular') return 'NPPA Circular';
-    if (type === 'authority_minutes') return 'Authority Minutes 2026–27';
-    return 'Expert Committee';
+  const sourceLabel = (doc: NppaDocumentLog) => {
+    if (doc.logCategory === 'meeting_minutes' || doc.sourceType === 'authority_minutes' || doc.sourceType === 'expert_committee') {
+      return doc.sourceType === 'expert_committee' ? 'Expert Committee Minutes' : 'Authority Meeting Minutes';
+    }
+    if (doc.logCategory === 'retail_price') return 'Retail Price Log (Form 1A)';
+    return 'Ceiling Price Circular';
   };
 
   return (
@@ -472,11 +576,11 @@ export default function ScheduleFormulationsTab({
               Schedule Formulations — Ceiling Price Master &amp; MRP Calculator
             </h2>
             <p className="text-sm text-slate-600 mt-1">
-              Conversion formula:{' '}
+              Showing latest notified ceiling price per formulation to be implemented ({ceilingPrices.length} active
+              {supersededCount > 0 ? ` · ${supersededCount} superseded historical record(s) archived` : ''}).{' '}
               <span className="font-mono text-xs text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                MRP per unit = Ceiling Price + (Ceiling Price × GST%)
-              </span>{' '}
-              × Pack Size
+                MRP = (Ceiling Price + GST%) × Pack Size
+              </span>
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 shrink-0">
@@ -590,8 +694,11 @@ export default function ScheduleFormulationsTab({
                 id="cp-search"
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="e.g. Atorvastatin, 40mg, Tablet, S.O. 1642..."
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setVisiblePriceCount(50);
+                }}
+                placeholder="e.g. Atorvastatin, 40mg, Tablet, S.O. 1575..."
                 className="w-full pl-9 pr-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-700"
               />
             </div>
@@ -655,7 +762,7 @@ export default function ScheduleFormulationsTab({
                     </td>
                   </tr>
                 ) : (
-                  filteredPrices.map((item) => {
+                  filteredPrices.slice(0, visiblePriceCount).map((item) => {
                     const unitMrp = calcUnitMrp(item.ceilingPrice);
                     const packMrp = calcPackMrp(item.ceilingPrice);
                     return (
@@ -676,6 +783,9 @@ export default function ScheduleFormulationsTab({
                           </div>
                           <div className="font-mono text-xs text-slate-500 tabular-nums">
                             {item.notificationDate}
+                            {item.effectiveDate && item.effectiveDate !== item.notificationDate
+                              ? ` · w.e.f. ${item.effectiveDate}`
+                              : ''}
                           </div>
                         </td>
                         <td className="py-3 px-3 text-right font-mono tabular-nums text-slate-900">
@@ -713,6 +823,30 @@ export default function ScheduleFormulationsTab({
                 )}
               </tbody>
             </table>
+            {filteredPrices.length > visiblePriceCount && (
+              <div className="px-4 py-3 bg-slate-50 border-t border-indigo-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+                <span>
+                  Showing {Math.min(visiblePriceCount, filteredPrices.length)} of{' '}
+                  {filteredPrices.length} scheduled formulations
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setVisiblePriceCount((c) => c + 50)}
+                    className="px-3.5 py-1.5 font-medium text-indigo-900 bg-[#EEF2FF] border border-indigo-200 rounded-lg hover:bg-indigo-100 cursor-pointer"
+                  >
+                    Load 50 More
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setVisiblePriceCount(filteredPrices.length)}
+                    className="px-3.5 py-1.5 font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer"
+                  >
+                    Show All ({filteredPrices.length})
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : priceSubView === 'history' ? (
           <div className="mt-5 overflow-x-auto border border-violet-100 rounded-lg">
@@ -861,16 +995,19 @@ export default function ScheduleFormulationsTab({
         )}
       </section>
 
-      {/* NPPA Circulars, Authority Minutes & Expert Committee Feed */}
+      {/* 3 Separate NPPA Logs: Ceiling Price, Retail Price & Meeting Minutes */}
       <section className="bg-white border border-slate-200 rounded-xl p-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-slate-200">
           <div>
             <h2 className="font-display text-lg font-semibold text-slate-900">
-              NPPA Circulars, Authority Minutes (2026–2027) &amp; Expert Committee Notes
+              NPPA Website Notifications — 3 Separate Regulatory Logs
             </h2>
             <p className="text-sm text-slate-600 mt-1">
-              Checks NPPA portals automatically every day at{' '}
-              <span className="font-mono font-medium">10:00 AM IST</span> (with automatic post-10 AM catch-up on server wake) and lets you download &amp; convert Gazette PDFs into tracked S.O. entries.
+              Automatically classifies NPPA portal updates at{' '}
+              <span className="font-mono font-medium">10:00 AM IST</span> into three separate logs:{' '}
+              <span className="font-medium text-slate-800">Ceiling Price</span>,{' '}
+              <span className="font-medium text-slate-800">Retail Price</span>, and{' '}
+              <span className="font-medium text-slate-800">Meeting Minutes</span>.
             </p>
           </div>
 
@@ -878,17 +1015,31 @@ export default function ScheduleFormulationsTab({
             {isAdmin && (
               <button
                 type="button"
-                onClick={() => setShowLogForm((v) => !v)}
+                onClick={() => {
+                  setLogForm((prev) => ({ ...prev, logCategory: activeLogTab }));
+                  setShowLogForm((v) => !v);
+                }}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 whitespace-nowrap shrink-0 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Add Log Entry
               </button>
             )}
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={handleBackfillSince2025}
+                disabled={backfilling || syncing}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-indigo-900 bg-[#EEF2FF] border border-indigo-200 rounded-lg hover:bg-indigo-100 disabled:opacity-60 whitespace-nowrap shrink-0 cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                {backfilling ? 'Loading 2025+ Archive…' : 'Load Since Jan 2025'}
+              </button>
+            )}
             <button
               type="button"
               onClick={handleSyncNppa}
-              disabled={syncing}
+              disabled={syncing || backfilling}
               className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-700 rounded-lg hover:bg-indigo-800 disabled:opacity-60 whitespace-nowrap shrink-0 cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
@@ -942,25 +1093,52 @@ export default function ScheduleFormulationsTab({
         {showLogForm && isAdmin && (
           <form onSubmit={handleAddLog} className="mt-4 p-4 rounded-lg border border-slate-200 bg-slate-50 grid grid-cols-1 md:grid-cols-12 gap-3">
             <div className="md:col-span-3">
-              <label className="block text-xs font-medium text-slate-600 mb-1">Source Type</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1">Log Category</label>
               <select
-                value={logForm.sourceType}
-                onChange={(e) => setLogForm({ ...logForm, sourceType: e.target.value as NppaSourceType })}
+                value={logForm.logCategory}
+                onChange={(e) => {
+                  const nextCat = e.target.value as NppaLogCategory;
+                  setLogForm({
+                    ...logForm,
+                    logCategory: nextCat,
+                    sourceType:
+                      nextCat === 'meeting_minutes'
+                        ? logForm.sourceType === 'expert_committee'
+                          ? 'expert_committee'
+                          : 'authority_minutes'
+                        : 'circular',
+                  });
+                }}
                 className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white"
               >
-                <option value="circular">NPPA Circular</option>
-                <option value="authority_minutes">Authority Minutes</option>
-                <option value="expert_committee">Expert Committee</option>
+                <option value="ceiling_price">Ceiling Price Log</option>
+                <option value="retail_price">Retail Price Log</option>
+                <option value="meeting_minutes">Meeting Minutes Log</option>
               </select>
             </div>
-            <div className="md:col-span-3">
+            {logForm.logCategory === 'meeting_minutes' && (
+              <div className="md:col-span-2">
+                <label className="block text-xs font-medium text-slate-600 mb-1">Minutes Type</label>
+                <select
+                  value={logForm.sourceType === 'expert_committee' ? 'expert_committee' : 'authority_minutes'}
+                  onChange={(e) =>
+                    setLogForm({ ...logForm, sourceType: e.target.value as NppaSourceType })
+                  }
+                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white"
+                >
+                  <option value="authority_minutes">Authority Minutes</option>
+                  <option value="expert_committee">Expert Committee</option>
+                </select>
+              </div>
+            )}
+            <div className={logForm.logCategory === 'meeting_minutes' ? 'md:col-span-2' : 'md:col-span-3'}>
               <label className="block text-xs font-medium text-slate-600 mb-1">Reference No.</label>
               <input
                 type="text"
                 required
                 value={logForm.referenceNumber}
                 onChange={(e) => setLogForm({ ...logForm, referenceNumber: e.target.value })}
-                placeholder="S.O. 4910(E) or MDC/75"
+                placeholder="S.O. 1575(E) or MDC/75"
                 className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white"
               />
             </div>
@@ -974,14 +1152,14 @@ export default function ScheduleFormulationsTab({
                 className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white"
               />
             </div>
-            <div className="md:col-span-4">
+            <div className={logForm.logCategory === 'meeting_minutes' ? 'md:col-span-3' : 'md:col-span-4'}>
               <label className="block text-xs font-medium text-slate-600 mb-1">Title</label>
               <input
                 type="text"
                 required
                 value={logForm.title}
                 onChange={(e) => setLogForm({ ...logForm, title: e.target.value })}
-                placeholder="Circular or minutes title"
+                placeholder="Notification or minutes title"
                 className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white"
               />
             </div>
@@ -990,7 +1168,7 @@ export default function ScheduleFormulationsTab({
                 type="text"
                 value={logForm.summary}
                 onChange={(e) => setLogForm({ ...logForm, summary: e.target.value })}
-                placeholder="Brief summary of ceiling/retail price impact"
+                placeholder="Brief summary of ceiling/retail price or committee decision"
                 className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white"
               />
             </div>
@@ -1012,69 +1190,127 @@ export default function ScheduleFormulationsTab({
           </form>
         )}
 
-        {/* Segmented Filter Control */}
+        {/* 3 Separate Log Tabs + Feed Search */}
         <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
-          <div className="inline-flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
-            {(
-              [
-                { id: 'all', label: 'All Feeds' },
-                { id: 'circular', label: 'Circulars' },
-                { id: 'authority_minutes', label: 'Authority Minutes' },
-                { id: 'expert_committee', label: 'Expert Committee' },
-              ] as const
-            ).map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setFeedFilter(tab.id)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                  feedFilter === tab.id
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex flex-wrap items-center gap-1 p-1 bg-slate-100 rounded-lg">
+              {(
+                [
+                  {
+                    id: 'ceiling_price',
+                    label: `Ceiling Price Log (${groupedLogs.ceiling_price.length})`,
+                  },
+                  {
+                    id: 'retail_price',
+                    label: `Retail Price Log (${groupedLogs.retail_price.length})`,
+                  },
+                  {
+                    id: 'meeting_minutes',
+                    label: `Meeting Minutes Log (${groupedLogs.meeting_minutes.length})`,
+                  },
+                ] as const
+              ).map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveLogTab(tab.id);
+                    setVisibleLogCount(25);
+                  }}
+                  className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                    activeLogTab === tab.id
+                      ? 'bg-white text-indigo-950 shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {activeLogTab === 'meeting_minutes' && (
+              <div className="inline-flex items-center gap-1 p-1 bg-[#F5F3FF] border border-violet-100 rounded-lg">
+                {(
+                  [
+                    { id: 'all', label: 'All Minutes' },
+                    { id: 'authority_minutes', label: 'Authority Meetings' },
+                    { id: 'expert_committee', label: 'Expert Committee' },
+                  ] as const
+                ).map((sub) => (
+                  <button
+                    key={sub.id}
+                    type="button"
+                    onClick={() => {
+                      setMinutesSubFilter(sub.id);
+                      setVisibleLogCount(25);
+                    }}
+                    className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer ${
+                      minutesSubFilter === sub.id
+                        ? 'bg-white text-violet-950 shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {sub.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500">
-            <a
-              href="https://nppa.gov.in/en/view_more?id=4"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 hover:text-blue-800"
-            >
-              Circulars Source <ExternalLink className="w-3 h-3" />
-            </a>
-            <span aria-hidden="true">·</span>
-            <a
-              href="https://nppa.gov.in/en/year2026-2027"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 hover:text-blue-800"
-            >
-              Authority 2026–27 <ExternalLink className="w-3 h-3" />
-            </a>
-            <span aria-hidden="true">·</span>
-            <a
-              href="https://nppa.gov.in/en/expertscommittee"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 hover:text-blue-800"
-            >
-              Expert Committee <ExternalLink className="w-3 h-3" />
-            </a>
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              type="search"
+              value={logSearchQuery}
+              onChange={(e) => {
+                setLogSearchQuery(e.target.value);
+                setVisibleLogCount(25);
+              }}
+              placeholder="Filter logs by title, date (2025-), S.O..."
+              className="w-64 max-w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-600"
+            />
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+              <a
+                href="https://nppa.gov.in/en/view_more?id=4"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 hover:text-blue-800"
+              >
+                Circulars Source <ExternalLink className="w-3 h-3" />
+              </a>
+              <span aria-hidden="true">·</span>
+              <a
+                href="https://nppa.gov.in/en/archieve"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 hover:text-blue-800"
+              >
+                2025 Archive <ExternalLink className="w-3 h-3" />
+              </a>
+              <span aria-hidden="true">·</span>
+              <a
+                href="https://nppa.gov.in/en/expertscommittee"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 hover:text-blue-800"
+              >
+                Expert Committee <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
           </div>
         </div>
 
         {/* Clean Unboxed List */}
         <div className="mt-4 divide-y divide-slate-200 border-t border-slate-200">
-          {filteredLogs.map((doc) => (
-            <div key={doc.id} className="py-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          {filteredLogs.length === 0 ? (
+            <div className="py-8 text-center text-xs text-slate-500">
+              No notifications found in this log matching your current filter.
+            </div>
+          ) : null}
+          {filteredLogs.slice(0, visibleLogCount).map((doc, idx) => (
+            <div key={`${doc.id}-${idx}`} className="py-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 mb-1">
-                  <span className="font-semibold text-blue-900">{sourceLabel(doc.sourceType)}</span>
+                  <span className="font-semibold text-blue-900">{sourceLabel(doc)}</span>
                   <span aria-hidden="true">·</span>
                   <span className="font-mono tabular-nums">{doc.referenceNumber}</span>
                   <span aria-hidden="true">·</span>
@@ -1134,6 +1370,30 @@ export default function ScheduleFormulationsTab({
             </div>
           ))}
         </div>
+
+        {filteredLogs.length > visibleLogCount && (
+          <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600">
+            <span>
+              Showing {Math.min(visibleLogCount, filteredLogs.length)} of {filteredLogs.length} notifications
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setVisibleLogCount((c) => c + 50)}
+                className="px-3.5 py-1.5 font-medium text-indigo-900 bg-[#EEF2FF] border border-indigo-200 rounded-lg hover:bg-indigo-100 cursor-pointer"
+              >
+                Load 50 More
+              </button>
+              <button
+                type="button"
+                onClick={() => setVisibleLogCount(filteredLogs.length)}
+                className="px-3.5 py-1.5 font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer"
+              >
+                Show All ({filteredLogs.length})
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Admin Add/Edit Ceiling Price Modal */}
@@ -1232,7 +1492,7 @@ export default function ScheduleFormulationsTab({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-700 mb-1">Ceiling Price (₹)</label>
                   <input
@@ -1254,7 +1514,7 @@ export default function ScheduleFormulationsTab({
                     onChange={(e) =>
                       setFormState({ ...formState, notificationNumber: e.target.value })
                     }
-                    placeholder="S.O. 4901(E)"
+                    placeholder="S.O. 1575(E)"
                     className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg font-mono"
                   />
                 </div>
@@ -1265,7 +1525,26 @@ export default function ScheduleFormulationsTab({
                     required
                     value={formState.notificationDate}
                     onChange={(e) =>
-                      setFormState({ ...formState, notificationDate: e.target.value })
+                      setFormState({
+                        ...formState,
+                        notificationDate: e.target.value,
+                        effectiveDate:
+                          formState.effectiveDate === formState.notificationDate
+                            ? e.target.value
+                            : formState.effectiveDate,
+                      })
+                    }
+                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Effective Date</label>
+                  <input
+                    type="date"
+                    required
+                    value={formState.effectiveDate}
+                    onChange={(e) =>
+                      setFormState({ ...formState, effectiveDate: e.target.value })
                     }
                     className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg font-mono"
                   />

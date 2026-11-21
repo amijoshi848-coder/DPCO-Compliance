@@ -10,7 +10,9 @@ import {
   Scale,
   ShieldCheck,
 } from 'lucide-react';
+import { signInWithPopup } from 'firebase/auth';
 import { apiFetch, setStoredToken } from '../lib/api';
+import { auth, googleAuthProvider } from '../lib/firebase';
 import type { AuthUser } from '../types/compliance';
 
 interface LoginPageProps {
@@ -44,6 +46,26 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
       active = false;
     };
   }, []);
+
+  async function handleGoogleSignIn() {
+    setError(null);
+    setSubmitting(true);
+    try {
+      const cred = await signInWithPopup(auth, googleAuthProvider);
+      const idToken = await cred.user.getIdToken();
+      setStoredToken(idToken);
+      const me = await apiFetch<{ user: AuthUser }>('/api/auth/me');
+      onLoginSuccess(me.user);
+    } catch (err) {
+      setStoredToken(null);
+      const msg = err instanceof Error ? err.message : 'Google Sign-In failed.';
+      if (!msg.includes('popup-closed-by-user')) {
+        setError(msg);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -243,48 +265,85 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
                   Checking workspace authentication status…
                 </div>
               ) : adminConfigured ? (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label htmlFor="loginId" className="block text-sm font-medium text-slate-700 mb-1.5">
-                      Login ID
-                    </label>
-                    <input
-                      id="loginId"
-                      type="text"
-                      autoComplete="username"
-                      required
-                      value={loginId}
-                      onChange={(e) => setLoginId(e.target.value)}
-                      placeholder="Enter your Login ID"
-                      className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1.5">
-                      Password
-                    </label>
-                    <input
-                      id="password"
-                      type="password"
-                      autoComplete="current-password"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter password"
-                      className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600"
-                    />
-                  </div>
-
+                <div className="space-y-4">
                   <button
-                    type="submit"
+                    type="button"
+                    onClick={handleGoogleSignIn}
                     disabled={submitting}
-                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-700 rounded-lg hover:bg-indigo-800 disabled:opacity-60 transition-colors cursor-pointer"
+                    className="w-full inline-flex items-center justify-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-slate-800 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-60 transition-colors cursor-pointer"
                   >
-                    {submitting ? 'Verifying Credentials…' : 'Sign In'}
-                    <ArrowRight className="w-4 h-4" />
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                      <path
+                        fill="#4285F4"
+                        d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24Z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14Z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96Z"
+                      />
+                    </svg>
+                    Continue with Google
                   </button>
-                </form>
+
+                  <div className="relative flex items-center py-1">
+                    <div className="flex-grow border-t border-slate-200" />
+                    <span className="shrink mx-3 text-[11px] uppercase tracking-wider text-slate-400 font-medium">
+                      or Login ID
+                    </span>
+                    <div className="flex-grow border-t border-slate-200" />
+                  </div>
+
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <label htmlFor="loginId" className="block text-sm font-medium text-slate-700 mb-1.5">
+                        Login ID
+                      </label>
+                      <input
+                        id="loginId"
+                        type="text"
+                        autoComplete="username"
+                        required
+                        value={loginId}
+                        onChange={(e) => setLoginId(e.target.value)}
+                        placeholder="Enter your Login ID"
+                        className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1.5">
+                        Password
+                      </label>
+                      <input
+                        id="password"
+                        type="password"
+                        autoComplete="current-password"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter password"
+                        className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-700 rounded-lg hover:bg-indigo-800 disabled:opacity-60 transition-colors cursor-pointer"
+                    >
+                      {submitting ? 'Verifying Credentials…' : 'Sign In with Login ID'}
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </form>
+                </div>
               ) : (
                 <form onSubmit={handleSetupAdmin} className="space-y-4">
                   <div>

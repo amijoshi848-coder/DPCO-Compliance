@@ -1,19 +1,32 @@
+import crypto from 'crypto';
 import * as cheerio from 'cheerio';
 import { aiConvertPdfToComplianceData } from './aiCompliance.ts';
+import { parseNppaGazettePdf } from './pdfTableParser.ts';
+import {
+  classifyNppaNotification,
+  createRetailPriceIfUnique,
+  getAllNppaLogsGrouped,
+  getLastDailyRunDateIst,
+  insertSyncLog,
+  recordCeilingPriceNotification,
+  setLastDailyRunDateIst,
+  updateNppaLogMetadata,
+  upsertNppaLogs,
+  upsertSoTracking,
+} from '../src/db/repository.ts';
 import type {
-  CeilingPriceEntry,
   CeilingPriceHistoryEntry,
   NppaDocumentLog,
   NppaSourceType,
-  RetailPriceEntry,
-  SoTrackingRecord,
   SyncLogEntry,
 } from '../src/types/compliance.ts';
-import { type DatabaseState, loadDb, saveDb } from './storage.ts';
 
 export const NPPA_URLS = {
   circular: 'https://nppa.gov.in/en/view_more?id=4',
+  circular_archive: 'https://nppa.gov.in/en/archieve',
   authority_minutes: 'https://nppa.gov.in/en/year2026-2027',
+  authority_minutes_2025_2026: 'https://nppa.gov.in/en/year2025-2026',
+  authority_minutes_2024_2025: 'https://nppa.gov.in/en/year2024-2025',
   expert_committee: 'https://nppa.gov.in/en/expertscommittee',
 } as const;
 
@@ -129,73 +142,7 @@ const DOSAGE_FORMATS = [
   'Suppository',
 ];
 
-export function recordSoTracking(
-  db: DatabaseState,
-  params: {
-    soNumber: string;
-    soDate: string;
-    sourceType: SoTrackingRecord['sourceType'];
-    sourceFileName?: string;
-    sourceUrl?: string;
-    ceilingCount?: number;
-    retailCount?: number;
-    importedBy: string;
-    notes?: string;
-  }
-): SoTrackingRecord {
-  const soNumber = params.soNumber.trim() || 'S.O. Unspecified';
-  const soDate = params.soDate.trim() || new Date().toISOString().slice(0, 10);
-  const nowIso = new Date().toISOString();
-  const cAdd = Math.max(0, params.ceilingCount || 0);
-  const rAdd = Math.max(0, params.retailCount || 0);
-
-  if (!Array.isArray(db.soTrackingRecords)) {
-    db.soTrackingRecords = [];
-  }
-
-  const existingIdx = db.soTrackingRecords.findIndex(
-    (rec) =>
-      rec.soNumber.toLowerCase() === soNumber.toLowerCase() &&
-      rec.soDate === soDate
-  );
-
-  if (existingIdx !== -1) {
-    const prev = db.soTrackingRecords[existingIdx];
-    const updated: SoTrackingRecord = {
-      ...prev,
-      sourceType: params.sourceType || prev.sourceType,
-      sourceFileName: params.sourceFileName || prev.sourceFileName,
-      sourceUrl: params.sourceUrl || prev.sourceUrl,
-      ceilingCount: prev.ceilingCount + cAdd,
-      retailCount: prev.retailCount + rAdd,
-      importedBy: params.importedBy,
-      importedAt: nowIso,
-      notes: params.notes || prev.notes,
-    };
-    db.soTrackingRecords[existingIdx] = updated;
-    db.soTrackingRecords.sort((a, b) => b.soDate.localeCompare(a.soDate));
-    return updated;
-  }
-
-  const created: SoTrackingRecord = {
-    id: `so-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-    soNumber,
-    soDate,
-    sourceType: params.sourceType,
-    sourceFileName: params.sourceFileName,
-    sourceUrl: params.sourceUrl,
-    ceilingCount: cAdd,
-    retailCount: rAdd,
-    importedBy: params.importedBy,
-    importedAt: nowIso,
-    notes: params.notes,
-  };
-  db.soTrackingRecords.unshift(created);
-  db.soTrackingRecords.sort((a, b) => b.soDate.localeCompare(a.soDate));
-  return created;
-}
-
-export function parseAndApplyNotificationText(
+export async function parseAndApplyNotificationText(
   rawText: string,
   options: {
     notificationNumber?: string;
@@ -205,10 +152,11 @@ export function parseAndApplyNotificationText(
     changedBy: string;
     sourceUrl?: string;
   }
-): ParsedNotificationSummary {
-  const db = loadDb();
+): Promise<ParsedNotificationSummary> {
   const notifNo =
-    options.notificationNumber?.trim() || extractRefNumber(rawText) || `S.O. ${Math.floor(4900 + Math.random() * 90)}(E)`;
+    options.notificationNumber?.trim() ||
+    extractRefNumber(rawText) ||
+    `S.O. ${Math.floor(4900 + Math.random() * 90)}(E)`;
   const notifDate =
     options.notificationDate?.trim() ||
     parseIndianDateToIso(rawText) ||
@@ -227,7 +175,6 @@ export function parseAndApplyNotificationText(
   };
 
   for (const line of lines) {
-    // Match price e.g. Rs. 19.45, ₹19.45, INR 19.45, or trailing decimal price
     const priceMatch = line.match(
       /(?:Rs\.?|₹|INR)\s*(\d+(?:\.\d{1,2})?)|\bprice[:\s-]+(\d+(?:\.\d{1,2})?)/i
     );
@@ -235,7 +182,6 @@ export function parseAndApplyNotificationText(
     const price = Number(priceMatch[1] || priceMatch[2]);
     if (!Number.isFinite(price) || price <= 0) continue;
 
-    // Detect dosage format
     let dosageFormat = 'Tablet';
     for (const fmt of DOSAGE_FORMATS) {
       if (new RegExp(`\\b${fmt.replace(/\s+/g, '\\s+')}\\b`, 'i').test(line)) {
@@ -244,19 +190,16 @@ export function parseAndApplyNotificationText(
       }
     }
 
-    // Extract strength (e.g. 10mg, 500mg + 125mg, 40 IU/ml, 0.3%)
     const strengthMatches = line.match(
       /\b\d+(?:\.\d+)?\s*(?:mg|mcg|ug|g|gm|ml|iu|%)(?:\s*\/\s*\d*\s*(?:ml|dose))?/gi
     );
     const strength = strengthMatches ? strengthMatches.join(' + ') : 'Standard';
 
-    // Determine whether this is Retail Price or Ceiling Price
     const isRetail =
       options.defaultKind === 'retail' ||
       (options.defaultKind !== 'ceiling' &&
         (/retail\s*price|form\s*1a|\+/i.test(line) || (strengthMatches && strengthMatches.length > 1)));
 
-    // Extract clean formulation / medicine name by stripping price & trailing tags
     const cleanedDesc = line
       .replace(/(?:Rs\.?|₹|INR)\s*\d+(?:\.\d{1,2})?.*$/i, '')
       .replace(/\bprice[:\s-]+\d+(?:\.\d{1,2})?.*$/i, '')
@@ -267,27 +210,20 @@ export function parseAndApplyNotificationText(
 
     if (isRetail) {
       if (notifDate <= '2026-07-16') continue;
-      const exists = db.retailPrices.some(
-        (r) =>
-          r.notificationNumber.toLowerCase() === notifNo.toLowerCase() &&
-          r.formulation.toLowerCase() === cleanedDesc.toLowerCase()
-      );
-      if (!exists) {
-        const rpEntry: RetailPriceEntry = {
-          id: `rp-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-          notificationNumber: notifNo,
-          notificationDate: notifDate,
-          formulation: cleanedDesc,
-          composition: cleanedDesc,
-          strength,
-          dosageFormat,
-          unitLabel: `1 ${dosageFormat}`,
-          retailPrice: price,
-          applicantCompany: 'NPPA Notified Retail Price (Form 1A)',
-          sourceUrl: options.sourceUrl || NPPA_URLS.circular,
-          createdAt: new Date().toISOString(),
-        };
-        db.retailPrices.unshift(rpEntry);
+      const res = await createRetailPriceIfUnique({
+        notificationNumber: notifNo,
+        notificationDate: notifDate,
+        formulation: cleanedDesc,
+        composition: cleanedDesc,
+        strength,
+        dosageFormat,
+        unitLabel: `1 ${dosageFormat}`,
+        retailPrice: price,
+        applicantCompany: 'NPPA Notified Retail Price (Form 1A)',
+        sourceUrl: options.sourceUrl || NPPA_URLS.circular,
+        createdAt: new Date().toISOString(),
+      });
+      if (res.created) {
         summary.retailAdded += 1;
         summary.parsedItems.push({
           kind: 'retail',
@@ -302,63 +238,16 @@ export function parseAndApplyNotificationText(
       continue;
     }
 
-    // Ceiling Price matching by medicine name + strength + dosage format
-    const medicineName = cleanedDesc
-      .replace(new RegExp(`\\b${dosageFormat}\\b`, 'gi'), '')
-      .replace(/\b\d+(?:\.\d+)?\s*(?:mg|mcg|ug|g|gm|ml|iu|%)(?:\s*\/\s*\d*\s*(?:ml|dose))?/gi, '')
-      .replace(/\s+/g, ' ')
-      .trim() || cleanedDesc;
-
-    const existingIdx = db.ceilingPrices.findIndex(
-      (c) =>
-        c.medicineName.toLowerCase() === medicineName.toLowerCase() &&
-        c.strength.toLowerCase().replace(/\s+/g, '') === strength.toLowerCase().replace(/\s+/g, '') &&
-        c.dosageFormat.toLowerCase() === dosageFormat.toLowerCase()
-    );
+    const medicineName =
+      cleanedDesc
+        .replace(new RegExp(`\\b${dosageFormat}\\b`, 'gi'), '')
+        .replace(/\b\d+(?:\.\d+)?\s*(?:mg|mcg|ug|g|gm|ml|iu|%)(?:\s*\/\s*\d*\s*(?:ml|dose))?/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim() || cleanedDesc;
 
     const nowIso = new Date().toISOString();
-    if (existingIdx !== -1) {
-      const prev = db.ceilingPrices[existingIdx];
-      const prevPrice = prev.ceilingPrice;
-      db.ceilingPrices[existingIdx] = {
-        ...prev,
-        ceilingPrice: price,
-        notificationNumber: notifNo,
-        notificationDate: notifDate,
-        effectiveDate: notifDate,
-        updatedAt: nowIso,
-      };
-      const hist: CeilingPriceHistoryEntry = {
-        id: `cph-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-        ceilingPriceId: prev.id,
-        medicineName: prev.medicineName,
-        strength: prev.strength,
-        dosageFormat: prev.dosageFormat,
-        changeType: 'revised',
-        previousCeilingPrice: prevPrice,
-        newCeilingPrice: price,
-        notificationNumber: notifNo,
-        notificationDate: notifDate,
-        source: options.source,
-        changedBy: options.changedBy,
-        notes: `Ceiling price updated from ₹${prevPrice.toFixed(2)} to ₹${price.toFixed(2)} via ${notifNo}.`,
-        timestamp: nowIso,
-      };
-      db.ceilingPriceHistory.unshift(hist);
-      summary.ceilingRevised += 1;
-      summary.parsedItems.push({
-        kind: 'ceiling',
-        medicineOrFormulation: prev.medicineName,
-        strength: prev.strength,
-        dosageFormat: prev.dosageFormat,
-        price,
-        previousPrice: prevPrice,
-        notificationNumber: notifNo,
-        notificationDate: notifDate,
-      });
-    } else {
-      const newEntry: CeilingPriceEntry = {
-        id: `cp-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    const rec = await recordCeilingPriceNotification({
+      entry: {
         medicineName,
         composition: cleanedDesc,
         strength,
@@ -372,41 +261,30 @@ export function parseAndApplyNotificationText(
         gstDefault: 12,
         sourceUrl: options.sourceUrl || NPPA_URLS.circular,
         updatedAt: nowIso,
-      };
-      db.ceilingPrices.unshift(newEntry);
-      const hist: CeilingPriceHistoryEntry = {
-        id: `cph-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-        ceilingPriceId: newEntry.id,
-        medicineName: newEntry.medicineName,
-        strength: newEntry.strength,
-        dosageFormat: newEntry.dosageFormat,
-        changeType: 'created',
-        previousCeilingPrice: null,
-        newCeilingPrice: price,
-        notificationNumber: notifNo,
-        notificationDate: notifDate,
-        source: options.source,
-        changedBy: options.changedBy,
-        notes: `New ceiling price ₹${price.toFixed(2)} added from ${notifNo}.`,
-        timestamp: nowIso,
-      };
-      db.ceilingPriceHistory.unshift(hist);
+      },
+      source: options.source,
+      changedBy: options.changedBy,
+    });
+
+    if (rec.action === 'revised') {
+      summary.ceilingRevised += 1;
+    } else {
       summary.ceilingAdded += 1;
-      summary.parsedItems.push({
-        kind: 'ceiling',
-        medicineOrFormulation: newEntry.medicineName,
-        strength: newEntry.strength,
-        dosageFormat: newEntry.dosageFormat,
-        price,
-        previousPrice: null,
-        notificationNumber: notifNo,
-        notificationDate: notifDate,
-      });
     }
+    summary.parsedItems.push({
+      kind: 'ceiling',
+      medicineOrFormulation: rec.item.medicineName,
+      strength: rec.item.strength,
+      dosageFormat: rec.item.dosageFormat,
+      price,
+      previousPrice: rec.previousPrice,
+      notificationNumber: notifNo,
+      notificationDate: notifDate,
+    });
   }
 
   if (summary.ceilingAdded + summary.ceilingRevised + summary.retailAdded > 0) {
-    recordSoTracking(db, {
+    await upsertSoTracking({
       soNumber: notifNo,
       soDate: notifDate,
       sourceType:
@@ -421,17 +299,24 @@ export function parseAndApplyNotificationText(
     });
   }
 
-  db.ceilingPriceHistory = db.ceilingPriceHistory.slice(0, 100);
-  saveDb(db);
   return summary;
+}
+
+function makeStableLogId(sourceType: NppaSourceType, dedupKey: string): string {
+  const hash = crypto.createHash('sha256').update(dedupKey).digest('base64url').slice(0, 16);
+  return `live-${sourceType}-${hash}`;
 }
 
 async function fetchNppaPage(
   url: string,
-  sourceType: NppaSourceType
+  sourceType: NppaSourceType,
+  options?: { maxDocs?: number; sinceDate?: string; timeoutMs?: number }
 ): Promise<{ ok: boolean; docs: NppaDocumentLog[]; error?: string }> {
+  const maxDocs = options?.maxDocs ?? 200;
+  const sinceDate = options?.sinceDate;
+  const timeoutMs = options?.timeoutMs ?? 20000;
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 12000);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const res = await fetch(url, {
       signal: controller.signal,
@@ -450,9 +335,9 @@ async function fetchNppaPage(
     const seenKeys = new Set<string>();
     const nowIso = new Date().toISOString();
 
-    // Primary structured table parser (matches all 3 official NPPA portal table layouts)
+    // Primary structured table parser (matches all official NPPA portal table layouts)
     $('table tr').each((_idx, tr) => {
-      if (docs.length >= 25) return;
+      if (docs.length >= maxDocs) return;
       const $tr = $(tr);
       const $tds = $tr.find('td');
       if ($tds.length === 0) return;
@@ -485,7 +370,7 @@ async function fetchNppaPage(
       // Pick the descriptive Title / Document Name cell (exclude serial numbers, pure dates, and PDF size badges)
       const titleCandidates = cells.filter(
         (c) =>
-          !/^\d{1,4}$/.test(c) &&
+          !/^\d{1,5}$/.test(c) &&
           !isPdfBadgeText(c) &&
           !(parseIndianDateToIso(c) && c.length <= 16)
       );
@@ -494,7 +379,7 @@ async function fetchNppaPage(
         titleCandidates.sort((a, b) => b.length - a.length)[0] ||
         cells.join(' — ');
 
-      if (!title || title.length < 8 || title.length > 350 || isPdfBadgeText(title)) return;
+      if (!title || title.length < 8 || title.length > 450 || isPdfBadgeText(title)) return;
       if (/^(sr\.?\s*no|date|title|document name|download|attachment)/i.test(title)) return;
 
       const rowText = cells.join(' ');
@@ -502,19 +387,23 @@ async function fetchNppaPage(
         parsedDate = parseIndianDateToIso(rowText) || nowIso.slice(0, 10);
       }
 
-      const dedupKey = (resolvedPdfUrl || `${title}|${parsedDate}`).toLowerCase();
+      if (sinceDate && parsedDate < sinceDate) return;
+
+      const dedupKey = (resolvedPdfUrl || `${sourceType}|${title}|${parsedDate}`).toLowerCase();
       if (seenKeys.has(dedupKey)) return;
       seenKeys.add(dedupKey);
 
+      const logSummary = resolvedPdfUrl
+        ? `Live NPPA notification (${parsedDate}) with direct PDF attachment.`
+        : `Fetched live from NPPA portal (${url}).`;
       docs.push({
-        id: `live-${sourceType}-${Buffer.from(dedupKey).toString('base64url').slice(0, 18)}`,
+        id: makeStableLogId(sourceType, dedupKey),
         sourceType,
+        logCategory: classifyNppaNotification(title, sourceType, logSummary),
         title,
         referenceNumber: extractRefNumber(rowText, parsedDate),
         publishedDate: parsedDate,
-        summary: resolvedPdfUrl
-          ? `Live NPPA notification (${parsedDate}) with direct PDF attachment.`
-          : `Fetched live from NPPA portal (${url}).`,
+        summary: logSummary,
         url: resolvedPrimary,
         pdfUrl: resolvedPdfUrl,
         fetchedAt: nowIso,
@@ -525,7 +414,7 @@ async function fetchNppaPage(
     // Fallback for non-table CMS list layouts if no table rows existed
     if (docs.length === 0) {
       $('.views-row, .item-list li, main a, .view-content a').each((_idx, el) => {
-        if (docs.length >= 20) return;
+        if (docs.length >= maxDocs) return;
         const $el = $(el);
         const isAnchor = el.tagName === 'a';
         const anchor = isAnchor ? $el : $el.find('a').first();
@@ -535,7 +424,7 @@ async function fetchNppaPage(
         const title =
           linkText.length >= 14 && !isPdfBadgeText(linkText) ? linkText : rowText;
 
-        if (!title || title.length < 14 || title.length > 280 || isPdfBadgeText(title)) return;
+        if (!title || title.length < 14 || title.length > 350 || isPdfBadgeText(title)) return;
         if (/^(home|about|contact|skip to|screen reader|archive|login|search)/i.test(title)) return;
 
         const looksRelevant =
@@ -544,25 +433,29 @@ async function fetchNppaPage(
           ) || href.toLowerCase().includes('.pdf');
 
         if (!looksRelevant) return;
-        const dedupKey = title.toLowerCase();
-        if (seenKeys.has(dedupKey)) return;
-        seenKeys.add(dedupKey);
 
         const parsedDate =
           parseIndianDateToIso(rowText) ||
           parseIndianDateToIso(title) ||
           nowIso.slice(0, 10);
 
+        if (sinceDate && parsedDate < sinceDate) return;
+
         const resolvedPrimary = href ? resolveUrl(href, url) : url;
         const resolvedPdfUrl = href.toLowerCase().includes('.pdf') ? resolvedPrimary : undefined;
+        const dedupKey = (resolvedPdfUrl || `${sourceType}|${title}|${parsedDate}`).toLowerCase();
+        if (seenKeys.has(dedupKey)) return;
+        seenKeys.add(dedupKey);
 
+        const logSummary = `Fetched live from NPPA portal (${url}).`;
         docs.push({
-          id: `live-${sourceType}-${Buffer.from(title).toString('base64url').slice(0, 18)}`,
+          id: makeStableLogId(sourceType, dedupKey),
           sourceType,
+          logCategory: classifyNppaNotification(title, sourceType, logSummary),
           title,
           referenceNumber: extractRefNumber(rowText, parsedDate),
           publishedDate: parsedDate,
-          summary: `Fetched live from NPPA portal (${url}).`,
+          summary: logSummary,
           url: resolvedPrimary,
           pdfUrl: resolvedPdfUrl,
           fetchedAt: nowIso,
@@ -583,198 +476,150 @@ async function fetchNppaPage(
 export async function runNppaSync(
   triggeredBy: 'scheduled_10am_ist' | 'manual'
 ): Promise<SyncLogEntry> {
-  const db = loadDb();
-
   const [circRes, authRes, expRes] = await Promise.all([
-    fetchNppaPage(NPPA_URLS.circular, 'circular'),
-    fetchNppaPage(NPPA_URLS.authority_minutes, 'authority_minutes'),
-    fetchNppaPage(NPPA_URLS.expert_committee, 'expert_committee'),
+    fetchNppaPage(NPPA_URLS.circular, 'circular', { maxDocs: 200 }),
+    fetchNppaPage(NPPA_URLS.authority_minutes, 'authority_minutes', { maxDocs: 50 }),
+    fetchNppaPage(NPPA_URLS.expert_committee, 'expert_committee', { maxDocs: 50 }),
   ]);
 
   const fetchedAll = [...circRes.docs, ...authRes.docs, ...expRes.docs];
-  const existingKeys = new Set(
-    db.nppaLogs.map((d) => (d.pdfUrl || `${d.title}|${d.publishedDate}`).toLowerCase())
-  );
-  const existingTitles = new Set(db.nppaLogs.map((d) => d.title.toLowerCase()));
-  let newlyAdded = 0;
+  const { newlyAdded, newlyAddedDocs } = await upsertNppaLogs(fetchedAll);
+
   let newCeilingPricesFound = 0;
   let newRetailPricesFound = 0;
   let pdfsAutoConverted = 0;
   const hasGeminiKey = Boolean(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim());
 
-  for (const doc of fetchedAll) {
-    const key = (doc.pdfUrl || `${doc.title}|${doc.publishedDate}`).toLowerCase();
-    if (!existingKeys.has(key) && !existingTitles.has(doc.title.toLowerCase())) {
-      db.nppaLogs.unshift(doc);
-      existingKeys.add(key);
-      existingTitles.add(doc.title.toLowerCase());
-      newlyAdded += 1;
+  for (const doc of newlyAddedDocs) {
+    if (doc.sourceType !== 'circular') continue;
 
-      if (doc.sourceType === 'circular') {
-        const parsed = parseAndApplyNotificationText(doc.title, {
-          notificationNumber: doc.referenceNumber,
-          notificationDate: doc.publishedDate,
-          source: triggeredBy === 'scheduled_10am_ist' ? 'scheduled_10am_ist' : 'manual_sync',
-          changedBy:
+    const parsed = await parseAndApplyNotificationText(doc.title, {
+      notificationNumber: doc.referenceNumber,
+      notificationDate: doc.publishedDate,
+      source: triggeredBy === 'scheduled_10am_ist' ? 'scheduled_10am_ist' : 'manual_sync',
+      changedBy:
+        triggeredBy === 'scheduled_10am_ist'
+          ? 'NPPA 10:00 AM IST Scheduler'
+          : 'Manual NPPA Sync',
+      sourceUrl: doc.pdfUrl || doc.url,
+    });
+    newCeilingPricesFound += parsed.ceilingAdded + parsed.ceilingRevised;
+    newRetailPricesFound += parsed.retailAdded;
+
+    const looksLikePriceNotification =
+      /ceiling\s*price|retail\s*price|price\s*fixation|\bs\.o\.\b|new\s*drug/i.test(
+        doc.title
+      );
+    if (doc.pdfUrl && looksLikePriceNotification && pdfsAutoConverted < 3) {
+      try {
+        const { buffer, fileName } = await downloadNppaPdfBuffer(
+          doc.pdfUrl,
+          doc.referenceNumber
+        );
+        const defaultKind =
+          doc.logCategory === 'retail_price'
+            ? 'retail'
+            : doc.logCategory === 'ceiling_price'
+              ? 'ceiling'
+              : 'auto';
+
+        const deterministic = await parseNppaGazettePdf({
+          pdfBuffer: buffer,
+          fileName,
+          fallbackSoNumber: doc.referenceNumber,
+          fallbackSoDate: doc.publishedDate,
+          defaultKind,
+        }).catch(() => null);
+
+        const pdfData =
+          deterministic && deterministic.rows.length > 0
+            ? deterministic
+            : hasGeminiKey
+              ? await aiConvertPdfToComplianceData({
+                  pdfBase64: buffer.toString('base64'),
+                  fileName,
+                  fallbackSoNumber: doc.referenceNumber,
+                  fallbackSoDate: doc.publishedDate,
+                  defaultKind,
+                })
+              : null;
+
+        if (pdfData && pdfData.rows.length > 0) {
+          const nowIso = new Date().toISOString();
+          const actor =
             triggeredBy === 'scheduled_10am_ist'
-              ? 'NPPA 10:00 AM IST Scheduler'
-              : 'Manual NPPA Sync',
-          sourceUrl: doc.pdfUrl || doc.url,
-        });
-        newCeilingPricesFound += parsed.ceilingAdded + parsed.ceilingRevised;
-        newRetailPricesFound += parsed.retailAdded;
-
-        // If pricing notification has a PDF and Gemini is configured, auto-extract up to 3 pricing PDFs per sync
-        const looksLikePriceNotification =
-          /ceiling\s*price|retail\s*price|price\s*fixation|\bs\.o\.\b|new\s*drug/i.test(
-            doc.title
-          );
-        if (hasGeminiKey && doc.pdfUrl && looksLikePriceNotification && pdfsAutoConverted < 3) {
-          try {
-            const { buffer, fileName } = await downloadNppaPdfBuffer(
-              doc.pdfUrl,
-              doc.referenceNumber
-            );
-            const pdfData = await aiConvertPdfToComplianceData({
-              pdfBase64: buffer.toString('base64'),
-              fileName,
-              fallbackSoNumber: doc.referenceNumber,
-              fallbackSoDate: doc.publishedDate,
-              defaultKind: /retail\s*price/i.test(doc.title) ? 'retail' : 'auto',
-            });
-            if (pdfData.rows.length > 0) {
-              const nowIso = new Date().toISOString();
-              const actor =
-                triggeredBy === 'scheduled_10am_ist'
-                  ? 'NPPA 10:00 AM IST Scheduler (Auto PDF)'
-                  : 'Manual NPPA Sync (Auto PDF)';
-              let cAdd = 0;
-              let cRev = 0;
-              let rAdd = 0;
-              for (const row of pdfData.rows) {
-                const effSo = pdfData.soNumber || row.notificationNumber || doc.referenceNumber;
-                const effDate = pdfData.soDate || row.notificationDate || doc.publishedDate;
-                if (row.kind === 'retail') {
-                  if (effDate <= '2026-07-16') continue;
-                  const dup = db.retailPrices.some(
-                    (r) =>
-                      r.notificationNumber.toLowerCase() === effSo.toLowerCase() &&
-                      r.formulation.toLowerCase().includes(row.medicineName.toLowerCase())
-                  );
-                  if (!dup) {
-                    db.retailPrices.unshift({
-                      id: `rp-auto-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-                      notificationNumber: effSo,
-                      notificationDate: effDate,
-                      formulation: `${row.medicineName} ${row.strength} ${row.dosageFormat}`.trim(),
-                      composition: row.composition || row.medicineName,
-                      strength: row.strength,
-                      dosageFormat: row.dosageFormat,
-                      unitLabel: row.unitLabel || `1 ${row.dosageFormat}`,
-                      retailPrice: row.price,
-                      applicantCompany: 'NPPA Auto-Extracted Notification PDF',
-                      sourceUrl: doc.pdfUrl,
-                      createdAt: nowIso,
-                    });
-                    rAdd += 1;
-                  }
-                } else {
-                  const exIdx = db.ceilingPrices.findIndex(
-                    (c) =>
-                      c.medicineName.toLowerCase() === row.medicineName.toLowerCase() &&
-                      c.strength.toLowerCase().replace(/\s+/g, '') ===
-                        row.strength.toLowerCase().replace(/\s+/g, '') &&
-                      c.dosageFormat.toLowerCase() === row.dosageFormat.toLowerCase()
-                  );
-                  if (exIdx >= 0) {
-                    const prev = db.ceilingPrices[exIdx];
-                    db.ceilingPrices[exIdx] = {
-                      ...prev,
-                      ceilingPrice: row.price,
-                      notificationNumber: effSo,
-                      notificationDate: effDate,
-                      effectiveDate: effDate,
-                      sourceUrl: doc.pdfUrl,
-                      updatedAt: nowIso,
-                    };
-                    db.ceilingPriceHistory.unshift({
-                      id: `cph-auto-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-                      ceilingPriceId: prev.id,
-                      medicineName: prev.medicineName,
-                      strength: prev.strength,
-                      dosageFormat: prev.dosageFormat,
-                      changeType: 'revised',
-                      previousCeilingPrice: prev.ceilingPrice,
-                      newCeilingPrice: row.price,
-                      notificationNumber: effSo,
-                      notificationDate: effDate,
-                      source: triggeredBy === 'scheduled_10am_ist' ? 'scheduled_10am_ist' : 'manual_sync',
-                      changedBy: actor,
-                      notes: `Auto-converted from NPPA PDF (${fileName}): ₹${prev.ceilingPrice.toFixed(2)} → ₹${row.price.toFixed(2)}.`,
-                      timestamp: nowIso,
-                    });
-                    cRev += 1;
-                  } else {
-                    const created: CeilingPriceEntry = {
-                      id: `cp-auto-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-                      medicineName: row.medicineName,
-                      composition: row.composition || row.medicineName,
-                      strength: row.strength,
-                      dosageFormat: row.dosageFormat,
-                      unitLabel: row.unitLabel || `1 ${row.dosageFormat}`,
-                      ceilingPrice: row.price,
-                      notificationNumber: effSo,
-                      notificationDate: effDate,
-                      effectiveDate: effDate,
-                      nlemSection: row.nlemSection || 'NLEM 2022',
-                      gstDefault: 12,
-                      sourceUrl: doc.pdfUrl,
-                      updatedAt: nowIso,
-                    };
-                    db.ceilingPrices.unshift(created);
-                    db.ceilingPriceHistory.unshift({
-                      id: `cph-auto-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-                      ceilingPriceId: created.id,
-                      medicineName: created.medicineName,
-                      strength: created.strength,
-                      dosageFormat: created.dosageFormat,
-                      changeType: 'created',
-                      previousCeilingPrice: null,
-                      newCeilingPrice: created.ceilingPrice,
-                      notificationNumber: created.notificationNumber,
-                      notificationDate: created.notificationDate,
-                      source: triggeredBy === 'scheduled_10am_ist' ? 'scheduled_10am_ist' : 'manual_sync',
-                      changedBy: actor,
-                      notes: `Auto-converted from NPPA PDF (${fileName}): ₹${created.ceilingPrice.toFixed(2)}.`,
-                      timestamp: nowIso,
-                    });
-                    cAdd += 1;
-                  }
-                }
-              }
-              if (cAdd + cRev + rAdd > 0) {
-                recordSoTracking(db, {
-                  soNumber: pdfData.soNumber || doc.referenceNumber,
-                  soDate: pdfData.soDate || doc.publishedDate,
-                  sourceType: 'daily_nppa_sync',
-                  sourceFileName: fileName,
+              ? 'NPPA 10:00 AM IST Scheduler (Auto PDF)'
+              : 'Manual NPPA Sync (Auto PDF)';
+          let cCount = 0;
+          let rAdd = 0;
+          for (const row of pdfData.rows) {
+            const effSo = pdfData.soNumber || row.notificationNumber || doc.referenceNumber;
+            const effDate = pdfData.soDate || row.notificationDate || doc.publishedDate;
+            if (row.kind === 'retail') {
+              if (effDate <= '2026-07-16') continue;
+              const rpRes = await createRetailPriceIfUnique({
+                id: `rp-auto-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                notificationNumber: effSo,
+                notificationDate: effDate,
+                formulation: `${row.medicineName} ${row.strength} ${row.dosageFormat}`.trim(),
+                composition: row.composition || row.medicineName,
+                strength: row.strength,
+                dosageFormat: row.dosageFormat,
+                unitLabel: row.unitLabel || `1 ${row.dosageFormat}`,
+                retailPrice: row.price,
+                applicantCompany: 'NPPA Auto-Extracted Notification PDF',
+                sourceUrl: doc.pdfUrl,
+                createdAt: nowIso,
+              });
+              if (rpRes.created) rAdd += 1;
+            } else {
+              await recordCeilingPriceNotification({
+                entry: {
+                  medicineName: row.medicineName,
+                  composition: row.composition || row.medicineName,
+                  strength: row.strength,
+                  dosageFormat: row.dosageFormat,
+                  unitLabel: row.unitLabel || `1 ${row.dosageFormat}`,
+                  ceilingPrice: row.price,
+                  notificationNumber: effSo,
+                  notificationDate: effDate,
+                  effectiveDate: effDate,
+                  nlemSection: row.nlemSection || 'NLEM 2022',
+                  gstDefault: 12,
                   sourceUrl: doc.pdfUrl,
-                  ceilingCount: cAdd + cRev,
-                  retailCount: rAdd,
-                  importedBy: actor,
-                  notes: `Auto-extracted during NPPA portal sync from ${fileName}.`,
-                });
-                doc.soImportedAt = nowIso;
-                doc.importedEntryCount = cAdd + cRev + rAdd;
-                newCeilingPricesFound += cAdd + cRev;
-                newRetailPricesFound += rAdd;
-                pdfsAutoConverted += 1;
-              }
+                  updatedAt: nowIso,
+                },
+                source:
+                  triggeredBy === 'scheduled_10am_ist' ? 'scheduled_10am_ist' : 'manual_sync',
+                changedBy: actor,
+                notes: `Auto-converted from NPPA PDF (${fileName}): ₹${row.price.toFixed(2)} (${effSo}).`,
+              });
+              cCount += 1;
             }
-          } catch {
-            // Keep log entry even if single PDF auto-extraction fails
+          }
+          if (cCount + rAdd > 0) {
+            await upsertSoTracking({
+              soNumber: pdfData.soNumber || doc.referenceNumber,
+              soDate: pdfData.soDate || doc.publishedDate,
+              sourceType: 'daily_nppa_sync',
+              sourceFileName: fileName,
+              sourceUrl: doc.pdfUrl,
+              ceilingCount: cCount,
+              retailCount: rAdd,
+              importedBy: actor,
+              notes: `Auto-extracted during NPPA portal sync from ${fileName}.`,
+            });
+            await updateNppaLogMetadata(doc.id, {
+              soImportedAt: nowIso,
+              incrementEntryCount: cCount + rAdd,
+            });
+            newCeilingPricesFound += cCount;
+            newRetailPricesFound += rAdd;
+            pdfsAutoConverted += 1;
           }
         }
+      } catch {
+        // Keep log entry even if single PDF auto-extraction fails
       }
     }
   }
@@ -796,7 +641,7 @@ export async function runNppaSync(
       ? `Synced all 3 NPPA portals. ${newlyAdded} new log(s), ${newCeilingPricesFound} ceiling update(s), ${newRetailPricesFound} retail circular(s)${pdfsAutoConverted > 0 ? ` (${pdfsAutoConverted} PDF(s) auto-converted)` : ''}.`
       : status === 'partial'
         ? `Partial sync (${successes}/3 portals reachable). ${newlyAdded} new log(s). ${errorDetails}`
-        : `NPPA portal unreachable from sandbox (${errorDetails}). Retained verified local regulatory registry.`;
+        : `NPPA portal unreachable (${errorDetails}). Retained verified PostgreSQL regulatory registry.`;
 
   const syncEntry: SyncLogEntry = {
     id: `sync-${Date.now()}`,
@@ -811,12 +656,99 @@ export async function runNppaSync(
     message,
   };
 
-  db.ceilingPriceHistory = db.ceilingPriceHistory.slice(0, 100);
-  db.syncLogs.unshift(syncEntry);
-  db.syncLogs = db.syncLogs.slice(0, 30);
-  saveDb(db);
-
+  await insertSyncLog(syncEntry);
   return syncEntry;
+}
+
+export async function backfillNppaLogsSince(sinceDate = '2025-01-01'): Promise<{
+  sinceDate: string;
+  fetchedTotal: number;
+  newlyAdded: number;
+  totalLogs: number;
+  breakdown: {
+    circular: number;
+    authority_minutes: number;
+    expert_committee: number;
+    ceiling_price: number;
+    retail_price: number;
+    meeting_minutes: number;
+  };
+  syncEntry: SyncLogEntry;
+}> {
+  const sources: Array<{ url: string; sourceType: NppaSourceType; maxDocs: number; timeoutMs: number }> = [
+    { url: NPPA_URLS.circular, sourceType: 'circular', maxDocs: 500, timeoutMs: 20000 },
+    { url: NPPA_URLS.circular_archive, sourceType: 'circular', maxDocs: 1500, timeoutMs: 30000 },
+    { url: NPPA_URLS.authority_minutes, sourceType: 'authority_minutes', maxDocs: 100, timeoutMs: 20000 },
+    { url: NPPA_URLS.authority_minutes_2025_2026, sourceType: 'authority_minutes', maxDocs: 100, timeoutMs: 20000 },
+    { url: NPPA_URLS.authority_minutes_2024_2025, sourceType: 'authority_minutes', maxDocs: 100, timeoutMs: 20000 },
+    { url: NPPA_URLS.expert_committee, sourceType: 'expert_committee', maxDocs: 100, timeoutMs: 20000 },
+    { url: `${NPPA_URLS.expert_committee}?page=1`, sourceType: 'expert_committee', maxDocs: 100, timeoutMs: 20000 },
+    { url: `${NPPA_URLS.expert_committee}?page=2`, sourceType: 'expert_committee', maxDocs: 100, timeoutMs: 20000 },
+    { url: `${NPPA_URLS.expert_committee}?page=3`, sourceType: 'expert_committee', maxDocs: 100, timeoutMs: 20000 },
+  ];
+
+  const results = await Promise.all(
+    sources.map((s) =>
+      fetchNppaPage(s.url, s.sourceType, {
+        maxDocs: s.maxDocs,
+        sinceDate,
+        timeoutMs: s.timeoutMs,
+      })
+    )
+  );
+
+  let fetchedTotal = 0;
+  let circularCount = 0;
+  let authorityCount = 0;
+  let expertCount = 0;
+  const collected: NppaDocumentLog[] = [];
+
+  for (let i = 0; i < sources.length; i++) {
+    const res = results[i];
+    if (!res.ok) continue;
+    for (const doc of res.docs) {
+      fetchedTotal += 1;
+      if (doc.sourceType === 'circular') circularCount += 1;
+      else if (doc.sourceType === 'authority_minutes') authorityCount += 1;
+      else expertCount += 1;
+      collected.push(doc);
+    }
+  }
+
+  const { newlyAdded } = await upsertNppaLogs(collected);
+  const grouped = await getAllNppaLogsGrouped();
+
+  const okCount = results.filter((r) => r.ok).length;
+  const syncEntry: SyncLogEntry = {
+    id: `sync-backfill-${Date.now()}`,
+    triggeredBy: 'manual',
+    timestamp: new Date().toISOString(),
+    status: okCount === sources.length ? 'success' : okCount > 0 ? 'partial' : 'fallback',
+    circularsFetched: circularCount,
+    authorityMinutesFetched: authorityCount,
+    expertNotesFetched: expertCount,
+    newCeilingPricesFound: 0,
+    newRetailPricesFound: 0,
+    message: `Loaded historical NPPA archive from ${sinceDate} (${okCount}/${sources.length} portal pages). ${newlyAdded} new notification(s) added into Ceiling Price (${grouped.ceilingLogs.length}), Retail Price (${grouped.retailLogs.length}), and Meeting Minutes (${grouped.meetingMinutesLogs.length}) logs.`,
+  };
+
+  await insertSyncLog(syncEntry);
+
+  return {
+    sinceDate,
+    fetchedTotal,
+    newlyAdded,
+    totalLogs: grouped.allLogs.length,
+    breakdown: {
+      circular: grouped.allLogs.filter((d) => d.sourceType === 'circular').length,
+      authority_minutes: grouped.allLogs.filter((d) => d.sourceType === 'authority_minutes').length,
+      expert_committee: grouped.allLogs.filter((d) => d.sourceType === 'expert_committee').length,
+      ceiling_price: grouped.ceilingLogs.length,
+      retail_price: grouped.retailLogs.length,
+      meeting_minutes: grouped.meetingMinutesLogs.length,
+    },
+    syncEntry,
+  };
 }
 
 function extractFileNameFromResponse(res: Response, targetUrl: string, fallbackRef?: string): string {
@@ -1004,12 +936,10 @@ export async function checkAndRunDailySync(): Promise<boolean> {
   if (dailySyncInProgress) return false;
   try {
     const { istDate, hour } = getIstDateAndTimeParts();
-    const db = loadDb();
-    // Run at 10:00 AM IST or catch up anytime after 10:00 AM IST if missed due to server restart/sleep
-    if (hour >= 10 && db.lastDailyRunDateIst !== istDate) {
+    const lastRun = await getLastDailyRunDateIst();
+    if (hour >= 10 && lastRun !== istDate) {
       dailySyncInProgress = true;
-      db.lastDailyRunDateIst = istDate;
-      saveDb(db);
+      await setLastDailyRunDateIst(istDate);
       await runNppaSync('scheduled_10am_ist');
       return true;
     }

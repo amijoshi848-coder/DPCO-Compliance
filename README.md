@@ -56,15 +56,22 @@ To preserve `nppa_compliance_db.json` (users, company portfolio, ceiling/retail 
 *(If deploying on the Free tier without a persistent disk, remove the `disk` block from `render.yaml` and omit `DATA_DIR` so the server falls back to `./data`; note that Free tier local disk storage is ephemeral across restarts/deploys.)*
 
 ### Environment Variables (Server-Side Only)
-Configure these in **Render Dashboard → Environment**:
+Configure these in your `.env` or deployment environment:
 
 | Variable | Required | Description |
 | --- | --- | --- |
 | `NODE_ENV` | Yes | Set to `production` |
 | `NODE_VERSION` | Recommended | `22.23.2` |
+| `SQL_HOST` | Yes | Cloud SQL PostgreSQL host address |
+| `SQL_USER` | Yes | PostgreSQL application user |
+| `SQL_PASSWORD` | Yes | PostgreSQL application password |
+| `SQL_DB_NAME` | Yes | PostgreSQL database name |
+| `SQL_ADMIN_USER` | Schema Push | PostgreSQL admin user for Drizzle schema management |
+| `SQL_ADMIN_PASSWORD` | Schema Push | PostgreSQL admin password |
 | `SESSION_SECRET` | Yes | Secret used to sign session tokens (`generateValue: true` in `render.yaml`) |
+| `ADMIN_EMAIL` | Recommended | Email auto-elevated to Administrator on Firebase Auth sign-in |
 | `ADMIN_LOGIN_ID` | Yes | Initial administrator Login ID (e.g. `admin`) |
 | `ADMIN_PASSWORD` | Yes | Initial administrator password (kept secret on the server; never exposed to the browser) |
-| `DATA_DIR` | With Disk | Directory path for database JSON storage (e.g. `/var/data`; defaults to `./data`) |
+| `DATA_DIR` | Optional | Directory path for initial baseline JSON seed / fallback (defaults to `./data`) |
 | `GEMINI_API_KEY` | Optional | Google Gemini API key for AI Assistant, semantic search, and PDF-to-data conversion (server-side only) |
-| `PORT` | Auto | Injected automatically by Render (defaults to `3000` locally) |
+| `PORT` | Auto | Listening port (defaults to `3000` locally) |

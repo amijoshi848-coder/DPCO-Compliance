@@ -12,6 +12,7 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
+import { onIdTokenChanged, signOut } from 'firebase/auth';
 import AdminAccessTab from './components/AdminAccessTab';
 import AiComplianceTab from './components/AiComplianceTab';
 import CompanyDetailsTab from './components/CompanyDetailsTab';
@@ -21,6 +22,7 @@ import NewProductTab from './components/NewProductTab';
 import RetailPricesTab, { type EnrichedRetailPrice } from './components/RetailPricesTab';
 import ScheduleFormulationsTab from './components/ScheduleFormulationsTab';
 import { apiFetch, getStoredToken, setStoredToken } from './lib/api';
+import { auth } from './lib/firebase';
 import type {
   AuthUser,
   CeilingPriceEntry,
@@ -30,6 +32,7 @@ import type {
   GlobalSearchResultItem,
   Nlem2022Entry,
   NppaDocumentLog,
+  NppaGroupedLogsResponse,
   SearchResultCategory,
   SoTrackingRecord,
   SyncLogEntry,
@@ -75,8 +78,12 @@ export default function App() {
   const [overview, setOverview] = useState<OverviewResponse | null>(null);
   const [ceilingPrices, setCeilingPrices] = useState<CeilingPriceEntry[]>([]);
   const [ceilingHistory, setCeilingHistory] = useState<CeilingPriceHistoryEntry[]>([]);
+  const [supersededCount, setSupersededCount] = useState(0);
   const [retailPrices, setRetailPrices] = useState<EnrichedRetailPrice[]>([]);
   const [nppaLogs, setNppaLogs] = useState<NppaDocumentLog[]>([]);
+  const [ceilingLogs, setCeilingLogs] = useState<NppaDocumentLog[]>([]);
+  const [retailLogs, setRetailLogs] = useState<NppaDocumentLog[]>([]);
+  const [meetingMinutesLogs, setMeetingMinutesLogs] = useState<NppaDocumentLog[]>([]);
   const [nlemList, setNlemList] = useState<Nlem2022Entry[]>([]);
   const [company, setCompany] = useState<CompanyProfile | null>(null);
   const [soTrackingRecords, setSoTrackingRecords] = useState<SoTrackingRecord[]>([]);
@@ -98,20 +105,26 @@ export default function App() {
     try {
       const [ovRes, cpRes, rpRes, logRes, nlemRes, compRes, soRes] = await Promise.all([
         apiFetch<OverviewResponse>('/api/dashboard/overview'),
-        apiFetch<{ items: CeilingPriceEntry[]; history: CeilingPriceHistoryEntry[] }>(
-          '/api/ceiling-prices'
-        ),
+        apiFetch<{
+          items: CeilingPriceEntry[];
+          supersededCount?: number;
+          history: CeilingPriceHistoryEntry[];
+        }>('/api/ceiling-prices'),
         apiFetch<{ items: EnrichedRetailPrice[] }>('/api/retail-prices'),
-        apiFetch<{ items: NppaDocumentLog[]; syncLogs: SyncLogEntry[] }>('/api/nppa-logs'),
+        apiFetch<NppaGroupedLogsResponse>('/api/nppa-logs'),
         apiFetch<{ items: Nlem2022Entry[] }>('/api/nlem2022'),
         apiFetch<{ company: CompanyProfile }>('/api/company'),
         apiFetch<{ items: SoTrackingRecord[] }>('/api/so-tracking'),
       ]);
       setOverview(ovRes);
       setCeilingPrices(cpRes.items);
+      setSupersededCount(cpRes.supersededCount || 0);
       setCeilingHistory(cpRes.history || []);
       setRetailPrices(rpRes.items);
       setNppaLogs(logRes.items);
+      setCeilingLogs(logRes.ceilingLogs || []);
+      setRetailLogs(logRes.retailLogs || []);
+      setMeetingMinutesLogs(logRes.meetingMinutesLogs || []);
       setNlemList(nlemRes.items);
       setCompany(compRes.company);
       setSoTrackingRecords(soRes.items || []);
@@ -121,7 +134,18 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    async function checkSession() {
+    let initialDone = false;
+    const unsubscribe = onIdTokenChanged(auth, async (fbUser) => {
+      if (fbUser) {
+        try {
+          const token = await fbUser.getIdToken();
+          setStoredToken(token);
+        } catch {
+          // ignore token refresh failure
+        }
+      }
+      if (initialDone) return;
+      initialDone = true;
       try {
         const res = await apiFetch<{ user: AuthUser }>('/api/auth/me');
         setUser(res.user);
@@ -132,8 +156,8 @@ export default function App() {
       } finally {
         setAuthChecking(false);
       }
-    }
-    void checkSession();
+    });
+    return () => unsubscribe();
   }, [loadWorkspaceData]);
 
   async function handleLoginSuccess(loggedUser: AuthUser) {
@@ -144,6 +168,7 @@ export default function App() {
 
   function handleLogout() {
     void apiFetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
+    void signOut(auth).catch(() => {});
     setStoredToken(null);
     setUser(null);
     setOverview(null);
@@ -496,7 +521,11 @@ export default function App() {
                     user={user}
                     ceilingPrices={ceilingPrices}
                     ceilingHistory={ceilingHistory}
+                    supersededCount={supersededCount}
                     nppaLogs={nppaLogs}
+                    ceilingLogs={ceilingLogs}
+                    retailLogs={retailLogs}
+                    meetingMinutesLogs={meetingMinutesLogs}
                     soTrackingRecords={soTrackingRecords}
                     schedulerInfo={
                       overview

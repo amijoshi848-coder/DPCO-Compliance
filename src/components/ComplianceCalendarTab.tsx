@@ -445,11 +445,11 @@ export default function ComplianceCalendarTab({
                   </div>
 
                   <div className="space-y-1 w-full overflow-hidden">
-                    {dayEvents.slice(0, 2).map((ev) => {
+                    {dayEvents.slice(0, 2).map((ev, evIdx) => {
                       const meta = CATEGORY_META[ev.category];
                       return (
                         <div
-                          key={ev.id}
+                          key={`${ev.id}-${evIdx}`}
                           className={`px-1.5 py-0.5 text-[10px] font-medium rounded border truncate ${meta.chipClass}`}
                           title={ev.title}
                         >
@@ -489,11 +489,11 @@ export default function ComplianceCalendarTab({
               </p>
             ) : (
               <div className="mt-4 space-y-3">
-                {selectedDayEvents.map((ev) => {
+                {selectedDayEvents.map((ev, evIdx) => {
                   const meta = CATEGORY_META[ev.category];
                   return (
                     <div
-                      key={ev.id}
+                      key={`${ev.id}-${evIdx}`}
                       className="p-3.5 rounded-lg border border-slate-200 bg-[#FBFBFF]"
                     >
                       <div className="flex items-center justify-between gap-2">
@@ -561,11 +561,11 @@ export default function ComplianceCalendarTab({
                   No upcoming events match the current filter.
                 </div>
               ) : (
-                upcomingEvents.map((ev) => {
+                upcomingEvents.map((ev, evIdx) => {
                   const meta = CATEGORY_META[ev.category];
                   return (
                     <button
-                      key={ev.id}
+                      key={`${ev.id}-${evIdx}`}
                       type="button"
                       onClick={() => {
                         setSelectedDate(ev.date);
