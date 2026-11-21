@@ -195,7 +195,7 @@ export function recordSoTracking(
   return created;
 }
 
-export function parseAndApplyNotificationText(
+export async function parseAndApplyNotificationText(
   rawText: string,
   options: {
     notificationNumber?: string;
@@ -204,9 +204,10 @@ export function parseAndApplyNotificationText(
     source: CeilingPriceHistoryEntry['source'];
     changedBy: string;
     sourceUrl?: string;
-  }
-): ParsedNotificationSummary {
-  const db = loadDb();
+  },
+  existingState?: DatabaseState
+): Promise<ParsedNotificationSummary> {
+  const db = existingState ?? await loadDb();
   const notifNo =
     options.notificationNumber?.trim() || extractRefNumber(rawText) || `S.O. ${Math.floor(4900 + Math.random() * 90)}(E)`;
   const notifDate =
@@ -422,7 +423,7 @@ export function parseAndApplyNotificationText(
   }
 
   db.ceilingPriceHistory = db.ceilingPriceHistory.slice(0, 100);
-  saveDb(db);
+  if (!existingState) await saveDb(db);
   return summary;
 }
 
@@ -583,7 +584,7 @@ async function fetchNppaPage(
 export async function runNppaSync(
   triggeredBy: 'scheduled_10am_ist' | 'manual'
 ): Promise<SyncLogEntry> {
-  const db = loadDb();
+  const db = await loadDb();
 
   const [circRes, authRes, expRes] = await Promise.all([
     fetchNppaPage(NPPA_URLS.circular, 'circular'),
@@ -611,7 +612,7 @@ export async function runNppaSync(
       newlyAdded += 1;
 
       if (doc.sourceType === 'circular') {
-        const parsed = parseAndApplyNotificationText(doc.title, {
+        const parsed = await parseAndApplyNotificationText(doc.title, {
           notificationNumber: doc.referenceNumber,
           notificationDate: doc.publishedDate,
           source: triggeredBy === 'scheduled_10am_ist' ? 'scheduled_10am_ist' : 'manual_sync',
@@ -620,7 +621,7 @@ export async function runNppaSync(
               ? 'NPPA 10:00 AM IST Scheduler'
               : 'Manual NPPA Sync',
           sourceUrl: doc.pdfUrl || doc.url,
-        });
+        }, db);
         newCeilingPricesFound += parsed.ceilingAdded + parsed.ceilingRevised;
         newRetailPricesFound += parsed.retailAdded;
 
@@ -814,7 +815,7 @@ export async function runNppaSync(
   db.ceilingPriceHistory = db.ceilingPriceHistory.slice(0, 100);
   db.syncLogs.unshift(syncEntry);
   db.syncLogs = db.syncLogs.slice(0, 30);
-  saveDb(db);
+  await saveDb(db);
 
   return syncEntry;
 }
@@ -1004,12 +1005,12 @@ export async function checkAndRunDailySync(): Promise<boolean> {
   if (dailySyncInProgress) return false;
   try {
     const { istDate, hour } = getIstDateAndTimeParts();
-    const db = loadDb();
+    const db = await loadDb();
     // Run at 10:00 AM IST or catch up anytime after 10:00 AM IST if missed due to server restart/sleep
     if (hour >= 10 && db.lastDailyRunDateIst !== istDate) {
       dailySyncInProgress = true;
       db.lastDailyRunDateIst = istDate;
-      saveDb(db);
+      await saveDb(db);
       await runNppaSync('scheduled_10am_ist');
       return true;
     }

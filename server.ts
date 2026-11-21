@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import express, { type NextFunction, type Request, type Response } from 'express';
+import express, { type RequestHandler, type NextFunction, type Request, type Response } from 'express';
 import fs from 'fs';
 import path from 'path';
 import { evaluateForm1Applicability } from './server/form1Engine.ts';
@@ -19,6 +19,8 @@ import {
   hashPassword,
   hasActiveAdmin,
   loadDb,
+  initializeStorage,
+  StorageError,
   saveDb,
   toPublicUser,
   verifyPassword,
@@ -111,7 +113,7 @@ function clearSessionCookie(req: Request, res: Response): void {
   res.setHeader('Set-Cookie', parts.join('; '));
 }
 
-function requireAuth(req: AuthedRequest, res: Response, next: NextFunction): void {
+async function requireAuth(req: AuthedRequest, res: Response, next: NextFunction): Promise<void> {
   const { token, viaCookie } = extractAuthToken(req);
   if (!token) {
     res.status(401).json({ error: 'Authentication required.' });
@@ -130,7 +132,7 @@ function requireAuth(req: AuthedRequest, res: Response, next: NextFunction): voi
     res.status(401).json({ error: 'Session expired or invalid.' });
     return;
   }
-  const db = loadDb();
+  const db = await loadDb();
   const user = db.users.find((u) => u.id === verified.id);
   if (!user || !user.active) {
     res.status(403).json({ error: 'Account is disabled or not permitted.' });
@@ -150,19 +152,24 @@ function requireAdmin(req: AuthedRequest, res: Response, next: NextFunction): vo
 
 async function createApp() {
   const app = express();
+  const route = (method: 'get' | 'post' | 'put' | 'delete', url: string, ...handlers: RequestHandler[]) => {
+    app[method](url, ...handlers.map(handler => ((req, res, next) => {
+      Promise.resolve().then(() => handler(req, res, next)).catch(next);
+    }) as RequestHandler));
+  };
   app.set('trust proxy', 1);
   app.use(express.json({ limit: '25mb' }));
 
   // Initialize DB and daily 10:00 AM IST scheduler
-  loadDb();
+  await initializeStorage();
   startDaily10AmScheduler();
 
   // --- Health & Public Overview ---
-  app.get('/api/health', (_req, res) => {
+  route('get', '/api/health', async (_req, res) => {
     res.json({ ok: true, service: 'dpco-compliance' });
   });
 
-  app.get('/api/export/standalone-html', (_req, res) => {
+  route('get', '/api/export/standalone-html', async (_req, res) => {
     const html = generateStandaloneHtml();
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader(
@@ -172,28 +179,28 @@ async function createApp() {
     res.send(html);
   });
 
-  app.get('/api/export/standalone-html/preview', (_req, res) => {
+  route('get', '/api/export/standalone-html/preview', async (_req, res) => {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.send(generateStandaloneHtml());
   });
 
   // --- Auth Routes ---
-  app.get('/api/auth/status', (_req, res) => {
-    const db = loadDb();
+  route('get', '/api/auth/status', async (_req, res) => {
+    const db = await loadDb();
     res.json({
       adminConfigured: hasActiveAdmin(db),
       envAdminConfigured: Boolean(getEnvAdminCredentials()),
     });
   });
 
-  app.post('/api/auth/setup-admin', (req, res) => {
+  route('post', '/api/auth/setup-admin', async (req, res) => {
     if (getEnvAdminCredentials()) {
       res.status(403).json({
         error: 'Initial administrator is managed by server environment variables.',
       });
       return;
     }
-    const db = loadDb();
+    const db = await loadDb();
     if (hasActiveAdmin(db)) {
       res.status(403).json({ error: 'Initial administrator is already configured.' });
       return;
@@ -230,7 +237,7 @@ async function createApp() {
       adminUser,
       ...db.users.filter((u) => u.loginId.toLowerCase() !== cleanLogin.toLowerCase()),
     ];
-    saveDb(db);
+    await saveDb(db);
 
     const publicUser = toPublicUser(adminUser);
     const token = createSessionToken(publicUser);
@@ -238,14 +245,14 @@ async function createApp() {
     res.status(201).json({ token, user: publicUser });
   });
 
-  app.post('/api/auth/login', (req, res) => {
+  route('post', '/api/auth/login', async (req, res) => {
     const { loginId, password } = req.body as { loginId?: string; password?: string };
     if (!loginId || !password) {
       res.status(400).json({ error: 'Login ID and Password are required.' });
       return;
     }
 
-    const db = loadDb();
+    const db = await loadDb();
     const user = db.users.find(
       (u) => u.loginId.toLowerCase() === loginId.trim().toLowerCase()
     );
@@ -263,7 +270,7 @@ async function createApp() {
     }
 
     user.lastLoginAt = new Date().toISOString();
-    saveDb(db);
+    await saveDb(db);
 
     const publicUser = toPublicUser(user);
     const token = createSessionToken(publicUser);
@@ -271,18 +278,18 @@ async function createApp() {
     res.json({ token, user: publicUser });
   });
 
-  app.post('/api/auth/logout', (req, res) => {
+  route('post', '/api/auth/logout', async (req, res) => {
     clearSessionCookie(req, res);
     res.json({ ok: true });
   });
 
-  app.get('/api/auth/me', requireAuth, (req: AuthedRequest, res) => {
+  route('get', '/api/auth/me', requireAuth, async (req: AuthedRequest, res) => {
     res.json({ user: req.authUser });
   });
 
   // --- Dashboard Overview ---
-  app.get('/api/dashboard/overview', requireAuth, (_req, res) => {
-    const db = loadDb();
+  route('get', '/api/dashboard/overview', requireAuth, async (_req, res) => {
+    const db = await loadDb();
     const now = new Date();
     const activeRetail = db.retailPrices.filter((r) => {
       if (r.notificationDate <= '2026-07-16') return false;
@@ -314,12 +321,12 @@ async function createApp() {
   });
 
   // --- Ceiling Prices (Schedule Formulations) ---
-  app.get('/api/ceiling-prices', requireAuth, (_req, res) => {
-    const db = loadDb();
+  route('get', '/api/ceiling-prices', requireAuth, async (_req, res) => {
+    const db = await loadDb();
     res.json({ items: db.ceilingPrices, history: db.ceilingPriceHistory });
   });
 
-  app.post('/api/ceiling-prices', requireAuth, requireAdmin, (req: AuthedRequest, res) => {
+  route('post', '/api/ceiling-prices', requireAuth, requireAdmin, async (req: AuthedRequest, res) => {
     const body = req.body as Partial<CeilingPriceEntry>;
     if (!body.medicineName || !body.strength || !body.dosageFormat || body.ceilingPrice == null) {
       res.status(400).json({
@@ -327,7 +334,7 @@ async function createApp() {
       });
       return;
     }
-    const db = loadDb();
+    const db = await loadDb();
     const nowIso = new Date().toISOString();
     const item: CeilingPriceEntry = {
       id: `cp-${Date.now()}`,
@@ -374,12 +381,12 @@ async function createApp() {
       importedBy: req.authUser?.loginId || 'admin',
       notes: `Added ceiling price for ${item.medicineName} ${item.strength}.`,
     });
-    saveDb(db);
+    await saveDb(db);
     res.status(201).json({ item });
   });
 
-  app.put('/api/ceiling-prices/:id', requireAuth, requireAdmin, (req: AuthedRequest, res) => {
-    const db = loadDb();
+  route('put', '/api/ceiling-prices/:id', requireAuth, requireAdmin, async (req: AuthedRequest, res) => {
+    const db = await loadDb();
     const idx = db.ceilingPrices.findIndex((c) => c.id === req.params.id);
     if (idx === -1) {
       res.status(404).json({ error: 'Ceiling price record not found.' });
@@ -418,12 +425,12 @@ async function createApp() {
     };
     db.ceilingPriceHistory.unshift(hist);
     db.ceilingPriceHistory = db.ceilingPriceHistory.slice(0, 100);
-    saveDb(db);
+    await saveDb(db);
     res.json({ item: db.ceilingPrices[idx] });
   });
 
-  app.delete('/api/ceiling-prices/:id', requireAuth, requireAdmin, (req: AuthedRequest, res) => {
-    const db = loadDb();
+  route('delete', '/api/ceiling-prices/:id', requireAuth, requireAdmin, async (req: AuthedRequest, res) => {
+    const db = await loadDb();
     const target = db.ceilingPrices.find((c) => c.id === req.params.id);
     if (!target) {
       res.status(404).json({ error: 'Ceiling price record not found.' });
@@ -447,13 +454,13 @@ async function createApp() {
       timestamp: new Date().toISOString(),
     });
     db.ceilingPriceHistory = db.ceilingPriceHistory.slice(0, 100);
-    saveDb(db);
+    await saveDb(db);
     res.json({ ok: true });
   });
 
   // --- Retail Prices (Post 16 July 2026 · Form 1A · 1-year Retention) ---
-  app.get('/api/retail-prices', requireAuth, (_req, res) => {
-    const db = loadDb();
+  route('get', '/api/retail-prices', requireAuth, async (_req, res) => {
+    const db = await loadDb();
     const now = new Date();
     const enriched = db.retailPrices
       .filter((r) => r.notificationDate > '2026-07-16')
@@ -475,7 +482,7 @@ async function createApp() {
     res.json({ items: enriched });
   });
 
-  app.post('/api/retail-prices', requireAuth, requireAdmin, (req: AuthedRequest, res) => {
+  route('post', '/api/retail-prices', requireAuth, requireAdmin, async (req: AuthedRequest, res) => {
     const body = req.body as Partial<RetailPriceEntry>;
     if (!body.notificationNumber || !body.notificationDate || !body.formulation || body.retailPrice == null) {
       res.status(400).json({
@@ -489,7 +496,7 @@ async function createApp() {
       });
       return;
     }
-    const db = loadDb();
+    const db = await loadDb();
     const item: RetailPriceEntry = {
       id: `rp-${Date.now()}`,
       notificationNumber: body.notificationNumber.trim(),
@@ -515,12 +522,12 @@ async function createApp() {
       importedBy: req.authUser?.loginId || 'admin',
       notes: `Added Form 1A retail price for ${item.formulation}.`,
     });
-    saveDb(db);
+    await saveDb(db);
     res.status(201).json({ item });
   });
 
-  app.put('/api/retail-prices/:id', requireAuth, requireAdmin, (req, res) => {
-    const db = loadDb();
+  route('put', '/api/retail-prices/:id', requireAuth, requireAdmin, async (req, res) => {
+    const db = await loadDb();
     const idx = db.retailPrices.findIndex((r) => r.id === req.params.id);
     if (idx === -1) {
       res.status(404).json({ error: 'Retail price record not found.' });
@@ -533,24 +540,24 @@ async function createApp() {
       retailPrice:
         patch.retailPrice != null ? Number(patch.retailPrice) : db.retailPrices[idx].retailPrice,
     };
-    saveDb(db);
+    await saveDb(db);
     res.json({ item: db.retailPrices[idx] });
   });
 
-  app.delete('/api/retail-prices/:id', requireAuth, requireAdmin, (req, res) => {
-    const db = loadDb();
+  route('delete', '/api/retail-prices/:id', requireAuth, requireAdmin, async (req, res) => {
+    const db = await loadDb();
     const before = db.retailPrices.length;
     db.retailPrices = db.retailPrices.filter((r) => r.id !== req.params.id);
     if (db.retailPrices.length === before) {
       res.status(404).json({ error: 'Retail price record not found.' });
       return;
     }
-    saveDb(db);
+    await saveDb(db);
     res.json({ ok: true });
   });
 
-  app.post('/api/retail-prices/purge-expired', requireAuth, requireAdmin, (_req, res) => {
-    const db = loadDb();
+  route('post', '/api/retail-prices/purge-expired', requireAuth, requireAdmin, async (_req, res) => {
+    const db = await loadDb();
     const now = new Date();
     const before = db.retailPrices.length;
     db.retailPrices = db.retailPrices.filter((r) => {
@@ -559,23 +566,23 @@ async function createApp() {
       return expiry >= now;
     });
     const purged = before - db.retailPrices.length;
-    saveDb(db);
+    await saveDb(db);
     res.json({ purged });
   });
 
   // --- NPPA Circulars, Authority Minutes & Expert Committee Logs ---
-  app.get('/api/nppa-logs', requireAuth, (_req, res) => {
-    const db = loadDb();
+  route('get', '/api/nppa-logs', requireAuth, async (_req, res) => {
+    const db = await loadDb();
     res.json({ items: db.nppaLogs, syncLogs: db.syncLogs });
   });
 
-  app.post('/api/nppa-logs/sync', requireAuth, async (_req, res) => {
+  route('post', '/api/nppa-logs/sync', requireAuth, async (_req, res) => {
     const syncResult = await runNppaSync('manual');
-    const db = loadDb();
+    const db = await loadDb();
     res.json({ syncResult, items: db.nppaLogs, syncLogs: db.syncLogs });
   });
 
-  app.post('/api/nppa-logs/parse-notification', requireAuth, requireAdmin, (req: AuthedRequest, res) => {
+  route('post', '/api/nppa-logs/parse-notification', requireAuth, requireAdmin, async (req: AuthedRequest, res) => {
     const { rawText, notificationNumber, notificationDate, defaultKind } = req.body as {
       rawText?: string;
       notificationNumber?: string;
@@ -586,7 +593,7 @@ async function createApp() {
       res.status(400).json({ error: 'Notification text is required to parse formulations and prices.' });
       return;
     }
-    const result = parseAndApplyNotificationText(rawText, {
+    const result = await parseAndApplyNotificationText(rawText, {
       notificationNumber,
       notificationDate,
       defaultKind: defaultKind || 'auto',
@@ -596,13 +603,13 @@ async function createApp() {
     res.json({ result });
   });
 
-  app.post('/api/nppa-logs', requireAuth, requireAdmin, (req, res) => {
+  route('post', '/api/nppa-logs', requireAuth, requireAdmin, async (req, res) => {
     const body = req.body as Partial<NppaDocumentLog>;
     if (!body.title || !body.sourceType) {
       res.status(400).json({ error: 'title and sourceType are required.' });
       return;
     }
-    const db = loadDb();
+    const db = await loadDb();
     const item: NppaDocumentLog = {
       id: `doc-${Date.now()}`,
       sourceType: body.sourceType,
@@ -615,30 +622,30 @@ async function createApp() {
       isLiveFetched: false,
     };
     db.nppaLogs.unshift(item);
-    saveDb(db);
+    await saveDb(db);
     res.status(201).json({ item });
   });
 
-  app.delete('/api/nppa-logs/:id', requireAuth, requireAdmin, (req, res) => {
-    const db = loadDb();
+  route('delete', '/api/nppa-logs/:id', requireAuth, requireAdmin, async (req, res) => {
+    const db = await loadDb();
     const before = db.nppaLogs.length;
     db.nppaLogs = db.nppaLogs.filter((d) => d.id !== req.params.id);
     if (db.nppaLogs.length === before) {
       res.status(404).json({ error: 'Document log not found.' });
       return;
     }
-    saveDb(db);
+    await saveDb(db);
     res.json({ ok: true });
   });
 
   // --- S.O. Tracking Ledger & NPPA PDF Download / Conversion ---
-  app.get('/api/so-tracking', requireAuth, (_req, res) => {
-    const db = loadDb();
+  route('get', '/api/so-tracking', requireAuth, async (_req, res) => {
+    const db = await loadDb();
     res.json({ items: db.soTrackingRecords || [] });
   });
 
-  app.get('/api/nppa-logs/:id/download-pdf', requireAuth, async (req, res) => {
-    const db = loadDb();
+  route('get', '/api/nppa-logs/:id/download-pdf', requireAuth, async (req, res) => {
+    const db = await loadDb();
     const log = db.nppaLogs.find((d) => d.id === req.params.id);
     if (!log) {
       res.status(404).json({ error: 'NPPA log entry not found.' });
@@ -651,7 +658,7 @@ async function createApp() {
       );
       if (!log.pdfUrl && resolvedUrl.toLowerCase().includes('.pdf')) {
         log.pdfUrl = resolvedUrl;
-        saveDb(db);
+        await saveDb(db);
       }
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
@@ -662,8 +669,8 @@ async function createApp() {
     }
   });
 
-  app.post('/api/nppa-logs/:id/convert-pdf', requireAuth, requireAdmin, async (req, res) => {
-    const db = loadDb();
+  route('post', '/api/nppa-logs/:id/convert-pdf', requireAuth, requireAdmin, async (req, res) => {
+    const db = await loadDb();
     const log = db.nppaLogs.find((d) => d.id === req.params.id);
     if (!log) {
       res.status(404).json({ error: 'NPPA log entry not found.' });
@@ -677,7 +684,7 @@ async function createApp() {
       );
       if (!log.pdfUrl && resolvedUrl.toLowerCase().includes('.pdf')) {
         log.pdfUrl = resolvedUrl;
-        saveDb(db);
+        await saveDb(db);
       }
       const result = await aiConvertPdfToComplianceData({
         pdfBase64: buffer.toString('base64'),
@@ -704,7 +711,7 @@ async function createApp() {
     }
   });
 
-  app.post('/api/pdf/convert', requireAuth, requireAdmin, async (req, res) => {
+  route('post', '/api/pdf/convert', requireAuth, requireAdmin, async (req, res) => {
     const { pdfBase64, fileName, fallbackSoNumber, fallbackSoDate, defaultKind } = req.body as {
       pdfBase64?: string;
       fileName?: string;
@@ -732,18 +739,18 @@ async function createApp() {
   });
 
   // --- NLEM 2022 Master & Form I Check ---
-  app.get('/api/nlem2022', requireAuth, (_req, res) => {
-    const db = loadDb();
+  route('get', '/api/nlem2022', requireAuth, async (_req, res) => {
+    const db = await loadDb();
     res.json({ items: db.nlem2022 });
   });
 
-  app.post('/api/nlem2022', requireAuth, requireAdmin, (req, res) => {
+  route('post', '/api/nlem2022', requireAuth, requireAdmin, async (req, res) => {
     const body = req.body as Partial<Nlem2022Entry>;
     if (!body.medicineName || !body.dosageForms || body.dosageForms.length === 0) {
       res.status(400).json({ error: 'medicineName and at least one dosageForm are required.' });
       return;
     }
-    const db = loadDb();
+    const db = await loadDb();
     const item: Nlem2022Entry = {
       id: `nlem-${Date.now()}`,
       medicineName: body.medicineName.trim(),
@@ -754,23 +761,23 @@ async function createApp() {
       notes: body.notes,
     };
     db.nlem2022.unshift(item);
-    saveDb(db);
+    await saveDb(db);
     res.status(201).json({ item });
   });
 
-  app.delete('/api/nlem2022/:id', requireAuth, requireAdmin, (req, res) => {
-    const db = loadDb();
+  route('delete', '/api/nlem2022/:id', requireAuth, requireAdmin, async (req, res) => {
+    const db = await loadDb();
     const before = db.nlem2022.length;
     db.nlem2022 = db.nlem2022.filter((n) => n.id !== req.params.id);
     if (db.nlem2022.length === before) {
       res.status(404).json({ error: 'NLEM entry not found.' });
       return;
     }
-    saveDb(db);
+    await saveDb(db);
     res.json({ ok: true });
   });
 
-  app.post('/api/form1-check', requireAuth, (req, res) => {
+  route('post', '/api/form1-check', requireAuth, async (req, res) => {
     const { productName, dosageForm, compositionText } = req.body as {
       productName?: string;
       dosageForm?: string;
@@ -780,7 +787,7 @@ async function createApp() {
       res.status(400).json({ error: 'Please enter the product composition to check Form I applicability.' });
       return;
     }
-    const db = loadDb();
+    const db = await loadDb();
     const result = evaluateForm1Applicability(
       {
         productName: productName || 'Proposed New Formulation',
@@ -794,14 +801,14 @@ async function createApp() {
   });
 
   // --- Company Profile ---
-  app.get('/api/company', requireAuth, (_req, res) => {
-    const db = loadDb();
+  route('get', '/api/company', requireAuth, async (_req, res) => {
+    const db = await loadDb();
     res.json({ company: db.companyProfile });
   });
 
-  app.put('/api/company', requireAuth, (req, res) => {
+  route('put', '/api/company', requireAuth, async (req, res) => {
     const patch = req.body as Partial<CompanyProfile>;
-    const db = loadDb();
+    const db = await loadDb();
     db.companyProfile = {
       ...db.companyProfile,
       ...patch,
@@ -809,17 +816,17 @@ async function createApp() {
         patch.existingFormulations ?? db.companyProfile.existingFormulations,
       updatedAt: new Date().toISOString(),
     };
-    saveDb(db);
+    await saveDb(db);
     res.json({ company: db.companyProfile });
   });
 
   // --- Admin: Allowed Login IDs Management ---
-  app.get('/api/admin/users', requireAuth, requireAdmin, (_req, res) => {
-    const db = loadDb();
+  route('get', '/api/admin/users', requireAuth, requireAdmin, async (_req, res) => {
+    const db = await loadDb();
     res.json({ users: db.users.map(toPublicUser) });
   });
 
-  app.post('/api/admin/users', requireAuth, requireAdmin, (req, res) => {
+  route('post', '/api/admin/users', requireAuth, requireAdmin, async (req, res) => {
     const { loginId, fullName, department, role, password } = req.body as {
       loginId?: string;
       fullName?: string;
@@ -831,7 +838,7 @@ async function createApp() {
       res.status(400).json({ error: 'loginId, fullName, and password are required.' });
       return;
     }
-    const db = loadDb();
+    const db = await loadDb();
     const exists = db.users.some(
       (u) => u.loginId.toLowerCase() === loginId.trim().toLowerCase()
     );
@@ -850,12 +857,12 @@ async function createApp() {
       createdAt: new Date().toISOString(),
     };
     db.users.push(created);
-    saveDb(db);
+    await saveDb(db);
     res.status(201).json({ user: toPublicUser(created) });
   });
 
-  app.put('/api/admin/users/:id', requireAuth, requireAdmin, (req: AuthedRequest, res) => {
-    const db = loadDb();
+  route('put', '/api/admin/users/:id', requireAuth, requireAdmin, async (req: AuthedRequest, res) => {
+    const db = await loadDb();
     const target = db.users.find((u) => u.id === req.params.id);
     if (!target) {
       res.status(404).json({ error: 'User not found.' });
@@ -877,12 +884,12 @@ async function createApp() {
     if (role !== undefined) target.role = role === 'admin' ? 'admin' : 'user';
     if (active !== undefined) target.active = Boolean(active);
     if (password && password.trim()) target.passwordHash = hashPassword(password.trim());
-    saveDb(db);
+    await saveDb(db);
     res.json({ user: toPublicUser(target) });
   });
 
-  app.delete('/api/admin/users/:id', requireAuth, requireAdmin, (req: AuthedRequest, res) => {
-    const db = loadDb();
+  route('delete', '/api/admin/users/:id', requireAuth, requireAdmin, async (req: AuthedRequest, res) => {
+    const db = await loadDb();
     if (req.params.id === req.authUser?.id) {
       res.status(400).json({ error: 'You cannot delete the currently signed-in admin account.' });
       return;
@@ -893,12 +900,12 @@ async function createApp() {
       res.status(404).json({ error: 'User not found.' });
       return;
     }
-    saveDb(db);
+    await saveDb(db);
     res.json({ ok: true });
   });
 
   // --- Unified Cross-Registry Search ---
-  app.get('/api/search', requireAuth, (req, res) => {
+  route('get', '/api/search', requireAuth, async (req, res) => {
     const rawQuery = String(req.query.q || '').trim();
     const categoryFilter = String(req.query.category || 'all').trim() as
       | 'all'
@@ -909,7 +916,7 @@ async function createApp() {
       return;
     }
 
-    const db = loadDb();
+    const db = await loadDb();
     const terms = rawQuery
       .toLowerCase()
       .split(/\s+/)
@@ -1017,7 +1024,7 @@ async function createApp() {
   });
 
   // --- Server-Side Gemini AI Capabilities ---
-  app.post('/api/ai/chat', requireAuth, async (req, res) => {
+  route('post', '/api/ai/chat', requireAuth, async (req, res) => {
     const { message, history, useWebSearch } = req.body as {
       message?: string;
       history?: AiChatHistoryTurn[];
@@ -1040,7 +1047,7 @@ async function createApp() {
     }
   });
 
-  app.post('/api/ai/extract-notification', requireAuth, requireAdmin, async (req, res) => {
+  route('post', '/api/ai/extract-notification', requireAuth, requireAdmin, async (req, res) => {
     const { rawText, notificationNumber, notificationDate, defaultKind } = req.body as {
       rawText?: string;
       notificationNumber?: string;
@@ -1065,7 +1072,7 @@ async function createApp() {
     }
   });
 
-  app.post('/api/ai/apply-extracted-rows', requireAuth, requireAdmin, (req: AuthedRequest, res) => {
+  route('post', '/api/ai/apply-extracted-rows', requireAuth, requireAdmin, async (req: AuthedRequest, res) => {
     const {
       rows,
       soNumber,
@@ -1088,7 +1095,7 @@ async function createApp() {
       return;
     }
 
-    const db = loadDb();
+    const db = await loadDb();
     const nowIso = new Date().toISOString();
     const actor = req.authUser?.loginId || 'admin';
     const overrideSoNo = soNumber?.trim() || '';
@@ -1242,11 +1249,11 @@ async function createApp() {
     }
 
     db.ceilingPriceHistory = db.ceilingPriceHistory.slice(0, 100);
-    saveDb(db);
+    await saveDb(db);
     res.json({ ceilingAdded, ceilingRevised, retailAdded, soRecord: lastSoRecord });
   });
 
-  app.post('/api/ai/form1-brief', requireAuth, async (req, res) => {
+  route('post', '/api/ai/form1-brief', requireAuth, async (req, res) => {
     const { result } = req.body as { result?: Form1CheckResult };
     if (!result || !result.compositionText) {
       res.status(400).json({ error: 'Form I check result is required.' });
@@ -1262,12 +1269,12 @@ async function createApp() {
   });
 
   // --- Compliance Calendar (Deadlines & Authority / Expert Committee Meetings) ---
-  app.get('/api/calendar', requireAuth, (_req, res) => {
-    const db = loadDb();
+  route('get', '/api/calendar', requireAuth, async (_req, res) => {
+    const db = await loadDb();
     res.json(buildComplianceCalendar(db));
   });
 
-  app.post('/api/calendar', requireAuth, requireAdmin, (req: AuthedRequest, res) => {
+  route('post', '/api/calendar', requireAuth, requireAdmin, async (req: AuthedRequest, res) => {
     const { title, date, category, referenceNumber, notes } = req.body as {
       title?: string;
       date?: string;
@@ -1279,7 +1286,7 @@ async function createApp() {
       res.status(400).json({ error: 'title and date (YYYY-MM-DD) are required.' });
       return;
     }
-    const db = loadDb();
+    const db = await loadDb();
     const item: CustomCalendarEvent = {
       id: `cal-custom-${Date.now()}`,
       title: title.trim(),
@@ -1291,19 +1298,19 @@ async function createApp() {
       createdAt: new Date().toISOString(),
     };
     db.customCalendarEvents.unshift(item);
-    saveDb(db);
+    await saveDb(db);
     res.status(201).json({ item, calendar: buildComplianceCalendar(db) });
   });
 
-  app.delete('/api/calendar/:id', requireAuth, requireAdmin, (req, res) => {
-    const db = loadDb();
+  route('delete', '/api/calendar/:id', requireAuth, requireAdmin, async (req, res) => {
+    const db = await loadDb();
     const before = db.customCalendarEvents.length;
     db.customCalendarEvents = db.customCalendarEvents.filter((e) => e.id !== req.params.id);
     if (db.customCalendarEvents.length === before) {
       res.status(404).json({ error: 'Custom calendar event not found.' });
       return;
     }
-    saveDb(db);
+    await saveDb(db);
     res.json({ ok: true, calendar: buildComplianceCalendar(db) });
   });
 
@@ -1324,7 +1331,7 @@ async function createApp() {
   } else {
     const distDir = path.resolve(process.cwd(), 'dist');
     app.use(express.static(distDir));
-    app.get('*', (_req, res) => {
+    route('get', '*', async (_req, res) => {
       const indexHtml = path.join(distDir, 'index.html');
       if (fs.existsSync(indexHtml)) {
         res.sendFile(indexHtml);
@@ -1333,6 +1340,15 @@ async function createApp() {
       }
     });
   }
+
+  app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    if (res.headersSent) { _next(err); return; }
+    if (err instanceof StorageError) {
+      res.status(err.status).json({ error: err.message });
+      return;
+    }
+    res.status(500).json({ error: 'Unable to complete the request. Please retry.' });
+  });
 
   const port = Number(process.env.PORT) || 3000;
   app.listen(port, '0.0.0.0', () => {
