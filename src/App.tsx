@@ -122,11 +122,6 @@ export default function App() {
 
   useEffect(() => {
     async function checkSession() {
-      const token = getStoredToken();
-      if (!token) {
-        setAuthChecking(false);
-        return;
-      }
       try {
         const res = await apiFetch<{ user: AuthUser }>('/api/auth/me');
         setUser(res.user);
@@ -148,6 +143,7 @@ export default function App() {
   }
 
   function handleLogout() {
+    void apiFetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
     setStoredToken(null);
     setUser(null);
     setOverview(null);

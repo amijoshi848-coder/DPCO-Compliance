@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ArrowRight,
   CheckCircle2,
   Code2,
   Download,
   FileSpreadsheet,
+  KeyRound,
   Lock,
   Scale,
   ShieldCheck,
@@ -17,10 +18,32 @@ interface LoginPageProps {
 }
 
 export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
+  const [statusLoading, setStatusLoading] = useState(true);
+  const [adminConfigured, setAdminConfigured] = useState(true);
   const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setFullName] = useState('DPCO Administrator');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    apiFetch<{ adminConfigured: boolean }>('/api/auth/status')
+      .then((res) => {
+        if (!active) return;
+        setAdminConfigured(Boolean(res.adminConfigured));
+      })
+      .catch(() => {
+        if (active) setAdminConfigured(true);
+      })
+      .finally(() => {
+        if (active) setStatusLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,10 +63,34 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
     }
   }
 
-  function fillDemo(id: string, pass: string) {
-    setLoginId(id);
-    setPassword(pass);
+  async function handleSetupAdmin(e: React.FormEvent) {
+    e.preventDefault();
     setError(null);
+    if (password.trim().length < 8) {
+      setError('Administrator password must be at least 8 characters long.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const data = await apiFetch<{ token: string; user: AuthUser }>('/api/auth/setup-admin', {
+        method: 'POST',
+        body: JSON.stringify({
+          loginId: loginId.trim(),
+          password,
+          fullName: fullName.trim() || 'DPCO Administrator',
+        }),
+      });
+      setStoredToken(data.token);
+      onLoginSuccess(data.user);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to configure administrator.');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -163,20 +210,22 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
             </div>
           </div>
 
-          {/* Right Column: Login Card */}
+          {/* Right Column: Login / First-Run Admin Setup Card */}
           <div className="lg:col-span-5 flex flex-col justify-center">
             <div className="bg-white border border-indigo-100 rounded-xl p-7 sm:p-8">
               <div className="flex items-center justify-between gap-4 mb-6">
                 <div>
                   <h2 className="font-display text-xl font-bold text-indigo-950">
-                    Authorized Sign In
+                    {adminConfigured ? 'Authorized Sign In' : 'Initial Administrator Setup'}
                   </h2>
                   <p className="text-sm text-slate-500 mt-1">
-                    Enter your approved Login ID and password to access the compliance workspace.
+                    {adminConfigured
+                      ? 'Enter your approved Login ID and password to access the compliance workspace.'
+                      : 'No administrator account is configured yet. Create the initial administrator credentials to lock and enter the workspace.'}
                   </p>
                 </div>
                 <div className="w-10 h-10 rounded-lg bg-[#EEF2FF] text-indigo-700 flex items-center justify-center shrink-0">
-                  <Lock className="w-4 h-4" />
+                  {adminConfigured ? <Lock className="w-4 h-4" /> : <KeyRound className="w-4 h-4" />}
                 </div>
               </div>
 
@@ -189,71 +238,136 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label htmlFor="loginId" className="block text-sm font-medium text-slate-700 mb-1.5">
-                    Login ID
-                  </label>
-                  <input
-                    id="loginId"
-                    type="text"
-                    autoComplete="username"
-                    required
-                    value={loginId}
-                    onChange={(e) => setLoginId(e.target.value)}
-                    placeholder="e.g. admin or regulatory.lead"
-                    className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600"
-                  />
+              {statusLoading ? (
+                <div className="py-8 text-center text-sm text-slate-500">
+                  Checking workspace authentication status…
                 </div>
+              ) : adminConfigured ? (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label htmlFor="loginId" className="block text-sm font-medium text-slate-700 mb-1.5">
+                      Login ID
+                    </label>
+                    <input
+                      id="loginId"
+                      type="text"
+                      autoComplete="username"
+                      required
+                      value={loginId}
+                      onChange={(e) => setLoginId(e.target.value)}
+                      placeholder="Enter your Login ID"
+                      className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600"
+                    />
+                  </div>
 
-                <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1.5">
-                    Password
-                  </label>
-                  <input
-                    id="password"
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter password"
-                    className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600"
-                  />
-                </div>
+                  <div>
+                    <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1.5">
+                      Password
+                    </label>
+                    <input
+                      id="password"
+                      type="password"
+                      autoComplete="current-password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter password"
+                      className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600"
+                    />
+                  </div>
 
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-700 rounded-lg hover:bg-indigo-800 disabled:opacity-60 transition-colors cursor-pointer"
-                >
-                  {submitting ? 'Verifying Credentials…' : 'Sign In'}
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </form>
-
-              <div className="mt-6 pt-5 border-t border-slate-200">
-                <p className="text-xs font-medium text-slate-500 mb-2.5">
-                  Demo Credentials (Click to fill)
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <button
-                    type="button"
-                    onClick={() => fillDemo('admin', 'admin@123')}
-                    className="text-left p-2.5 rounded-lg border border-indigo-100 bg-[#EEF2FF]/70 hover:bg-[#EEF2FF] transition-colors cursor-pointer"
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-700 rounded-lg hover:bg-indigo-800 disabled:opacity-60 transition-colors cursor-pointer"
                   >
-                    <div className="text-xs font-semibold text-indigo-950">Admin Login</div>
-                    <div className="text-xs font-mono text-indigo-800 mt-0.5">admin / admin@123</div>
+                    {submitting ? 'Verifying Credentials…' : 'Sign In'}
+                    <ArrowRight className="w-4 h-4" />
                   </button>
+                </form>
+              ) : (
+                <form onSubmit={handleSetupAdmin} className="space-y-4">
+                  <div>
+                    <label htmlFor="setupFullName" className="block text-sm font-medium text-slate-700 mb-1.5">
+                      Administrator Name
+                    </label>
+                    <input
+                      id="setupFullName"
+                      type="text"
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="DPCO Administrator"
+                      className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="setupLoginId" className="block text-sm font-medium text-slate-700 mb-1.5">
+                      Admin Login ID
+                    </label>
+                    <input
+                      id="setupLoginId"
+                      type="text"
+                      autoComplete="username"
+                      required
+                      minLength={3}
+                      value={loginId}
+                      onChange={(e) => setLoginId(e.target.value)}
+                      placeholder="Choose an admin Login ID (min 3 chars)"
+                      className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="setupPassword" className="block text-sm font-medium text-slate-700 mb-1.5">
+                      Admin Password
+                    </label>
+                    <input
+                      id="setupPassword"
+                      type="password"
+                      autoComplete="new-password"
+                      required
+                      minLength={8}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Minimum 8 characters"
+                      className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="setupConfirmPassword" className="block text-sm font-medium text-slate-700 mb-1.5">
+                      Confirm Password
+                    </label>
+                    <input
+                      id="setupConfirmPassword"
+                      type="password"
+                      autoComplete="new-password"
+                      required
+                      minLength={8}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Re-enter admin password"
+                      className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600"
+                    />
+                  </div>
+
                   <button
-                    type="button"
-                    onClick={() => fillDemo('regulatory.lead', 'nppa@2026')}
-                    className="text-left p-2.5 rounded-lg border border-emerald-100 bg-[#ECFDF5]/70 hover:bg-[#ECFDF5] transition-colors cursor-pointer"
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-700 rounded-lg hover:bg-indigo-800 disabled:opacity-60 transition-colors cursor-pointer"
                   >
-                    <div className="text-xs font-semibold text-emerald-950">Allowed User ID</div>
-                    <div className="text-xs font-mono text-emerald-800 mt-0.5">regulatory.lead / nppa@2026</div>
+                    {submitting ? 'Configuring Administrator…' : 'Create Admin & Enter Workspace'}
+                    <ArrowRight className="w-4 h-4" />
                   </button>
-                </div>
+                </form>
+              )}
+
+              <div className="mt-6 pt-4 border-t border-slate-200 text-xs text-slate-500 leading-relaxed">
+                {adminConfigured
+                  ? 'Access is restricted to administrator-provisioned Login IDs. Additional team accounts can be managed under Admin Access.'
+                  : 'For automated deployments, initial administrator credentials can also be provisioned via your server environment settings.'}
               </div>
             </div>
           </div>

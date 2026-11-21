@@ -1,12 +1,27 @@
 services:
   - type: web
     name: dpco-compliance
-    env: node
-    plan: free
-    buildCommand: npm install && npm run build
+    runtime: node
+    plan: starter
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
+    healthCheckPath: /api/health
+    disk:
+      name: dpco-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NODE_VERSION
+        value: 22.23.2
+      - key: DATA_DIR
+        value: /var/data
       - key: SESSION_SECRET
         generateValue: true
+      - key: ADMIN_LOGIN_ID
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false

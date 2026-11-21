@@ -37,11 +37,28 @@ export interface DatabaseState {
   lastDailyRunDateIst: string | null;
 }
 
-const DATA_DIR = path.resolve(process.cwd(), 'data');
-const DB_PATH = path.join(DATA_DIR, 'nppa_compliance_db.json');
+export function getDataDir(): string {
+  const configured = process.env.DATA_DIR?.trim();
+  return configured ? path.resolve(configured) : path.resolve(process.cwd(), 'data');
+}
+
+function getDbFilePath(): string {
+  return path.join(getDataDir(), 'nppa_compliance_db.json');
+}
+
 const SESSION_SECRET =
-  process.env.SESSION_SECRET ||
-  crypto.createHash('sha256').update(process.cwd() + '_dpco_compliance_secret').digest('hex');
+  process.env.SESSION_SECRET?.trim() || crypto.randomBytes(32).toString('hex');
+
+export function getEnvAdminCredentials(): { loginId: string; password: string } | null {
+  const password = process.env.ADMIN_PASSWORD?.trim();
+  if (!password) return null;
+  const loginId = process.env.ADMIN_LOGIN_ID?.trim() || 'admin';
+  return { loginId, password };
+}
+
+export function hasActiveAdmin(db: DatabaseState): boolean {
+  return db.users.some((u) => u.role === 'admin' && u.active);
+}
 
 export function hashPassword(password: string): string {
   const salt = crypto.randomBytes(16).toString('hex');
@@ -155,31 +172,58 @@ function buildSeedSoTracking(
   return Array.from(buckets.values()).sort((a, b) => b.soDate.localeCompare(a.soDate));
 }
 
-function buildInitialState(): DatabaseState {
-  const nowIso = new Date().toISOString();
-  return {
-    users: [
-      {
+function ensureConfiguredAdmin(db: DatabaseState): boolean {
+  let mutated = false;
+  if (!Array.isArray(db.users)) {
+    db.users = [];
+    mutated = true;
+  }
+
+  const envAdmin = getEnvAdminCredentials();
+  if (envAdmin) {
+    const existing = db.users.find(
+      (u) =>
+        u.id === 'usr-admin' ||
+        u.loginId.toLowerCase() === envAdmin.loginId.toLowerCase()
+    );
+    if (existing) {
+      if (existing.loginId !== envAdmin.loginId) {
+        existing.loginId = envAdmin.loginId;
+        mutated = true;
+      }
+      if (existing.role !== 'admin') {
+        existing.role = 'admin';
+        mutated = true;
+      }
+      if (!existing.active) {
+        existing.active = true;
+        mutated = true;
+      }
+      if (!verifyPassword(envAdmin.password, existing.passwordHash)) {
+        existing.passwordHash = hashPassword(envAdmin.password);
+        mutated = true;
+      }
+    } else {
+      db.users.unshift({
         id: 'usr-admin',
-        loginId: 'admin',
+        loginId: envAdmin.loginId,
         fullName: 'DPCO Administrator',
         department: 'Regulatory & Pricing Governance',
         role: 'admin',
-        passwordHash: hashPassword('admin@123'),
+        passwordHash: hashPassword(envAdmin.password),
         active: true,
-        createdAt: nowIso,
-      },
-      {
-        id: 'usr-reg-1',
-        loginId: 'regulatory.lead',
-        fullName: 'Priya Nair',
-        department: 'Regulatory Affairs',
-        role: 'user',
-        passwordHash: hashPassword('nppa@2026'),
-        active: true,
-        createdAt: nowIso,
-      },
-    ],
+        createdAt: new Date().toISOString(),
+      });
+      mutated = true;
+    }
+  }
+
+  return mutated;
+}
+
+function buildInitialState(): DatabaseState {
+  const state: DatabaseState = {
+    users: [],
     ceilingPrices: INITIAL_CEILING_PRICES,
     ceilingPriceHistory: INITIAL_CEILING_HISTORY,
     retailPrices: INITIAL_RETAIL_PRICES,
@@ -204,20 +248,28 @@ function buildInitialState(): DatabaseState {
     soTrackingRecords: buildSeedSoTracking(INITIAL_CEILING_PRICES, INITIAL_RETAIL_PRICES),
     lastDailyRunDateIst: '2026-11-18',
   };
+  ensureConfiguredAdmin(state);
+  return state;
 }
 
 let cachedState: DatabaseState | null = null;
+let cachedDbPath: string | null = null;
 
 export function loadDb(): DatabaseState {
-  if (cachedState) return cachedState;
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+  const dataDir = getDataDir();
+  const dbPath = getDbFilePath();
+  if (cachedState && cachedDbPath === dbPath) return cachedState;
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
   }
-  if (fs.existsSync(DB_PATH)) {
+  if (fs.existsSync(dbPath)) {
     try {
-      const raw = fs.readFileSync(DB_PATH, 'utf8');
+      const raw = fs.readFileSync(dbPath, 'utf8');
       const parsed = JSON.parse(raw) as DatabaseState;
       let mutated = false;
+      if (ensureConfiguredAdmin(parsed)) {
+        mutated = true;
+      }
       if (!Array.isArray(parsed.ceilingPriceHistory)) {
         parsed.ceilingPriceHistory = INITIAL_CEILING_HISTORY;
         mutated = true;
@@ -255,6 +307,7 @@ export function loadDb(): DatabaseState {
         }
       }
       cachedState = parsed;
+      cachedDbPath = dbPath;
       if (mutated) saveDb(cachedState);
       return cachedState;
     } catch {
@@ -262,16 +315,20 @@ export function loadDb(): DatabaseState {
     }
   }
   cachedState = buildInitialState();
+  cachedDbPath = dbPath;
   saveDb(cachedState);
   return cachedState;
 }
 
 export function saveDb(state: DatabaseState): void {
+  const dataDir = getDataDir();
+  const dbPath = getDbFilePath();
   cachedState = state;
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+  cachedDbPath = dbPath;
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
   }
-  const tmp = `${DB_PATH}.tmp`;
+  const tmp = `${dbPath}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(state, null, 2), 'utf8');
-  fs.renameSync(tmp, DB_PATH);
+  fs.renameSync(tmp, dbPath);
 }

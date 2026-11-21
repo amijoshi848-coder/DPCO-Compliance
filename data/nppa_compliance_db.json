@@ -1,27 +1,5 @@
 {
-  "users": [
-    {
-      "id": "usr-admin",
-      "loginId": "admin",
-      "fullName": "DPCO Administrator",
-      "department": "Regulatory & Pricing Governance",
-      "role": "admin",
-      "passwordHash": "179819f2bea86185f1da13a336658282:5c6c550d387b2ef766bd8e61d3e15951b0f4ce5fc1e14c4d3aa9b6696b80d48a5cec2f9c47128b64ea50d9cf9b70c4fd8d28fffb94fea0c15ffca2081241551f",
-      "active": true,
-      "createdAt": "2026-11-18T09:47:24.900Z",
-      "lastLoginAt": "2026-11-19T07:02:03.793Z"
-    },
-    {
-      "id": "usr-reg-1",
-      "loginId": "regulatory.lead",
-      "fullName": "Priya Nair",
-      "department": "Regulatory Affairs",
-      "role": "user",
-      "passwordHash": "809fc06e904c4b83872b572f39ab6576:7eac5d428b30b0383daaa3a9ea7324e0549a90b6b6ff2ece99711c84b59e25f78412de21a5370c62ba4eae060d0522879fe0b6353ded917f81da30683a662ccc",
-      "active": true,
-      "createdAt": "2026-11-18T09:47:24.900Z"
-    }
-  ],
+  "users": [],
   "ceilingPrices": [
     {
       "id": "cp-1",
@@ -304,367 +282,39 @@
   ],
   "nppaLogs": [
     {
-      "id": "live-expert_committee-Njk5LjIyIEtCIFBE",
-      "sourceType": "expert_committee",
-      "title": "699.22 KB PDF English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2025-09-16",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
-      "url": "https://nppa.gov.in/storage/uploads/expert-committee/71minutespdf-646c5c75ccd911429f78d73543259373-48e410df7094aa7fa13340c672fc0c81.pdf",
-      "fetchedAt": "2026-11-19T06:54:39.054Z",
-      "isLiveFetched": true,
-      "pdfUrl": "https://nppa.gov.in/storage/uploads/expert-committee/71minutespdf-646c5c75ccd911429f78d73543259373-48e410df7094aa7fa13340c672fc0c81.pdf"
-    },
-    {
-      "id": "live-expert_committee-Mi4yMiBNQiBQREYg",
-      "sourceType": "expert_committee",
-      "title": "2.22 MB PDF English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2025-10-09",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
-      "url": "https://nppa.gov.in/storage/uploads/expert-committee/72-mdc-minutes-signedcompressedpdf-6aefd0385ff1b09b747ae2005d553b05-792264d841678c989a5d34969c18ece1.pdf",
-      "fetchedAt": "2026-11-19T06:54:39.054Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-expert_committee-My40OCBNQiBQREYg",
-      "sourceType": "expert_committee",
-      "title": "3.48 MB PDF English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2025-11-25",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
-      "url": "https://nppa.gov.in/storage/uploads/expert-committee/73-mdc-minutespdf-1932c46eb57bcb4f814ad1501adbc885-8109d5805c666cc686ee7bf21b5a2bcb.pdf",
-      "fetchedAt": "2026-11-19T06:54:39.054Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-expert_committee-NDQ3LjIwIEtCIFBE",
-      "sourceType": "expert_committee",
-      "title": "447.20 KB PDF English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2025-12-18",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
-      "url": "https://nppa.gov.in/storage/uploads/expert-committee/74-minutescompressedpdf-85ef8742624421ce4f7ff3d2cdda76d5-5112d6e0605ce309a1b43d89991dd32a.pdf",
-      "fetchedAt": "2026-11-19T06:54:39.054Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-expert_committee-Mjk2LjYxIEtCIFBE",
-      "sourceType": "expert_committee",
-      "title": "296.61 KB PDF English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-02-11",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
-      "url": "https://nppa.gov.in/storage/uploads/expert-committee/75th-mdc-minutescompressedpdf-ea7293bd626be556fced3f3ce9039327-50dde7e9cabd480b13cbcecd3003e736.pdf",
-      "fetchedAt": "2026-11-19T06:54:39.054Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-expert_committee-NjM4LjI5IEtCIFBE",
-      "sourceType": "expert_committee",
-      "title": "638.29 KB PDF English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-04-08",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
-      "url": "https://nppa.gov.in/storage/uploads/expert-committee/76-mdc-meeting-signed-minutespdf-2cbc91f735e503bb25702ef452564ecc-3a504abfb3c91f1bc32be10c716a0150-3c2e944c77c6a9f2b5fde2c7fcbb5735.pdf",
-      "fetchedAt": "2026-11-19T06:54:39.054Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-expert_committee-NTQ2LjExIEtCIFBE",
-      "sourceType": "expert_committee",
-      "title": "546.11 KB PDF English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-05-15",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
-      "url": "https://nppa.gov.in/storage/uploads/expert-committee/merged-mdc-77th-c832f3b56d3ebb70f22fe530c5fd1063-6852add3cd246eaf01ad75b8823fafcd.pdf",
-      "fetchedAt": "2026-11-19T06:54:39.054Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-expert_committee-NTg1LjIyIEtCIFBE",
-      "sourceType": "expert_committee",
-      "title": "585.22 KB PDF English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-06-24",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
-      "url": "https://nppa.gov.in/storage/uploads/expert-committee/final-minutes-78th-mdc-35770e4b9f2f09904f5607504cab0b80.pdf",
-      "fetchedAt": "2026-11-19T06:54:39.054Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-expert_committee-NTg0LjczIEtCIFBE",
-      "sourceType": "expert_committee",
-      "title": "584.73 KB PDF English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-07-27",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
-      "url": "https://nppa.gov.in/storage/uploads/expert-committee/minutes-79th-mdc-e9bed1fc5761f31c8ebfd519ea84fde8.pdf",
-      "fetchedAt": "2026-11-19T06:54:39.054Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-expert_committee-NDE4LjE0IEtCIFBE",
-      "sourceType": "expert_committee",
-      "title": "418.14 KB PDF English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-09-24",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/expertscommittee).",
-      "url": "https://nppa.gov.in/storage/uploads/expert-committee/signed-minutes-80th-mdc-compressed-c465a62a531e6ba279c3dec377e0828e.pdf",
-      "fetchedAt": "2026-11-19T06:54:39.054Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-authority_minutes-MU1CL1BERi9Fbmds",
-      "sourceType": "authority_minutes",
-      "title": "1MB/PDF/English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-05-26",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/year2026-2027).",
-      "url": "https://nppa.gov.in/storage/uploads/pdf/146th-minutes-compressed-cc5fd31fd6d59612b42851f284d82279.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.988Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-authority_minutes-ODYxS0IvUERGL0Vu",
-      "sourceType": "authority_minutes",
-      "title": "861KB/PDF/English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-07-07",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/year2026-2027).",
-      "url": "https://nppa.gov.in/storage/uploads/pdf/final-minutes-148th-authority-signed-7038de8292e335294e3ac1ef8b1c2130.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.988Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-authority_minutes-OTMxS0IvUERGL0Vu",
-      "sourceType": "authority_minutes",
-      "title": "931KB/PDF/English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-07-30",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/year2026-2027).",
-      "url": "https://nppa.gov.in/storage/uploads/pdf/149thauthorityminutes-507d96169dd1b131e9a1987ba36d8693.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.988Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-authority_minutes-OTIzS0IvUERGL0Vu",
-      "sourceType": "authority_minutes",
-      "title": "923KB/PDF/English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-08-25",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/year2026-2027).",
-      "url": "https://nppa.gov.in/storage/uploads/pdf/signed-minutes-150th-authority-meeting-fd2913dcca3c04e5e193f34157c7cfa0.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.988Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-authority_minutes-ODIzS0IvUERGL0Vu",
-      "sourceType": "authority_minutes",
-      "title": "823KB/PDF/English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-10-08",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/year2026-2027).",
-      "url": "https://nppa.gov.in/storage/uploads/pdf/151st-authority-minutes-signed-9bac1618a32b697c00adbb41940b916c.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.988Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-authority_minutes-Mk1CL1BERi9Fbmds",
-      "sourceType": "authority_minutes",
-      "title": "2MB/PDF/English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-10-16",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/year2026-2027).",
-      "url": "https://nppa.gov.in/storage/uploads/pdf/152-58a6f49ffd20be4f8275cc48381ca34c.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.988Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-authority_minutes-OTU1S0IvUERGL0Vu",
-      "sourceType": "authority_minutes",
-      "title": "955KB/PDF/English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-10-29",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/year2026-2027).",
-      "url": "https://nppa.gov.in/storage/uploads/pdf/153rd-authority-signed-cafd96a37b40964dbe8c65b1269150b4.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.988Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-authority_minutes-NzE4S0IvUERGL0Vu",
-      "sourceType": "authority_minutes",
-      "title": "718KB/PDF/English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-11-11",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/year2026-2027).",
-      "url": "https://nppa.gov.in/storage/uploads/pdf/final-minutes-154th-authority-meeting-signed-5f87244c5664be2821ad99523d61da45.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.988Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-circular-MS4xIE1CIFBERiBF",
+      "id": "live-circular-aHR0cHM6Ly9ucHBhLm",
       "sourceType": "circular",
-      "title": "1.1 MB PDF English",
-      "referenceNumber": "f Non-Scheduled",
-      "publishedDate": "2026-11-09",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
-      "url": "https://nppa.gov.in/storage/uploads/tender/revised-mrp-report-30102026-30-10-2026.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.848Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-circular-MC42IE1CIFBERiBF",
-      "sourceType": "circular",
-      "title": "0.6 MB PDF English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-11-19",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
-      "url": "https://nppa.gov.in/storage/uploads/tender/review-04-11-2026.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.848Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-circular-MC42MyBNQiBQREYg",
-      "sourceType": "circular",
-      "title": "0.63 MB PDF English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-11-19",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
-      "url": "https://nppa.gov.in/storage/uploads/tender/per-gram-04-11-2026.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.848Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-circular-MC42NiBNQiBQREYg",
-      "sourceType": "circular",
-      "title": "0.66 MB PDF English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-11-19",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
-      "url": "https://nppa.gov.in/storage/uploads/tender/wpa-04-11-2026.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.848Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-circular-MC43OCBNQiBQREYg",
-      "sourceType": "circular",
-      "title": "0.78 MB PDF English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-11-19",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
-      "url": "https://nppa.gov.in/storage/uploads/tender/retail-04-11-2026.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.848Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-circular-MS4xNiBNQiBQREYg",
-      "sourceType": "circular",
-      "title": "1.16 MB PDF English",
-      "referenceNumber": "f Non-Scheduled",
-      "publishedDate": "2026-11-09",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
-      "url": "https://nppa.gov.in/storage/uploads/tender/revised-mrp-report-03112026-03-11-2026.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.848Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-circular-MS4yIE1CIFBERiBF",
-      "sourceType": "circular",
-      "title": "1.2 MB PDF English",
-      "referenceNumber": "f Non-Scheduled",
-      "publishedDate": "2026-11-09",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
-      "url": "https://nppa.gov.in/storage/uploads/tender/revised-mrp-report-04112026-04-11-2026.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.848Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-circular-MC4xNCBNQiBQREYg",
-      "sourceType": "circular",
-      "title": "0.14 MB PDF Hindi",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-11-19",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
-      "url": "https://nppa.gov.in/storage/uploads/tender/faq-on-tmr-hindi-06-11-2026.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.848Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-circular-MC4yMiBNQiBQREYg",
-      "sourceType": "circular",
-      "title": "0.22 MB PDF English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-11-19",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
-      "url": "https://nppa.gov.in/storage/uploads/tender/faq-on-tmr-06-11-2026.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.848Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-circular-MS4yMSBNQiBQREYg",
-      "sourceType": "circular",
-      "title": "1.21 MB PDF English",
-      "referenceNumber": "f Non-Scheduled",
-      "publishedDate": "2026-11-09",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
-      "url": "https://nppa.gov.in/storage/uploads/tender/revised-mrp-report-06112026-06-11-2026.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.848Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-circular-MS4xOSBNQiBQREYg",
-      "sourceType": "circular",
-      "title": "1.19 MB PDF English",
-      "referenceNumber": "f Non-Scheduled",
-      "publishedDate": "2026-11-09",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
-      "url": "https://nppa.gov.in/storage/uploads/tender/revised-mrp-information-09112026-09-11-2026.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.848Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-circular-MS45NyBNQiBQREYg",
-      "sourceType": "circular",
-      "title": "1.97 MB PDF English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-11-19",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
-      "url": "https://nppa.gov.in/storage/uploads/tender/om-dated-11112026-11-11-2026.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.848Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-circular-MS40MiBNQiBQREYg",
-      "sourceType": "circular",
-      "title": "1.42 MB PDF English",
-      "referenceNumber": "f Non-Scheduled",
-      "publishedDate": "2026-11-09",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
-      "url": "https://nppa.gov.in/storage/uploads/tender/revised-mrp-information-11112026-1-11-11-2026.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.848Z",
-      "isLiveFetched": true
-    },
-    {
-      "id": "live-circular-MC41NCBNQiBQREYg",
-      "sourceType": "circular",
-      "title": "0.54 MB PDF English",
-      "referenceNumber": "NPPA Notice",
-      "publishedDate": "2026-11-19",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
+      "title": "Notification for Ceiling Prices of Orthopaedic Knee Implants for Knee Replacement System",
+      "referenceNumber": "Notice (2026-11-14)",
+      "publishedDate": "2026-11-14",
+      "summary": "Live NPPA notification (2026-11-14) with direct PDF attachment.",
       "url": "https://nppa.gov.in/storage/uploads/tender/277903-14-11-2026.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.848Z",
+      "pdfUrl": "https://nppa.gov.in/storage/uploads/tender/277903-14-11-2026.pdf",
+      "fetchedAt": "2026-11-21T09:11:50.562Z",
       "isLiveFetched": true
     },
     {
-      "id": "live-circular-MS41MiBNQiBQREYg",
+      "id": "live-circular-aHR0cHM6Ly9ucHBhLm",
       "sourceType": "circular",
-      "title": "1.52 MB PDF English",
-      "referenceNumber": "f Non-Scheduled",
-      "publishedDate": "2026-11-09",
-      "summary": "Fetched live from NPPA portal (https://nppa.gov.in/en/view_more?id=4).",
+      "title": "Revised MRP of Non-Scheduled Anti-Cancer Drugs - effective from 09/11/2026",
+      "referenceNumber": "Notice (2026-11-18)",
+      "publishedDate": "2026-11-18",
+      "summary": "Live NPPA notification (2026-11-18) with direct PDF attachment.",
       "url": "https://nppa.gov.in/storage/uploads/tender/revised-mrp-information-18-11-2026.pdf",
-      "fetchedAt": "2026-11-19T06:54:38.848Z",
+      "pdfUrl": "https://nppa.gov.in/storage/uploads/tender/revised-mrp-information-18-11-2026.pdf",
+      "fetchedAt": "2026-11-21T09:11:50.562Z",
+      "isLiveFetched": true
+    },
+    {
+      "id": "live-circular-aHR0cHM6Ly9ucHBhLm",
+      "sourceType": "circular",
+      "title": "DISPLAY OF DRAFT VERSION OF PROPOSED PRICE CALCULATION SHEET FOR 01 PROPOSED RETAIL PRICE",
+      "referenceNumber": "Notice (2026-11-20)",
+      "publishedDate": "2026-11-20",
+      "summary": "Live NPPA notification (2026-11-20) with direct PDF attachment.",
+      "url": "https://nppa.gov.in/storage/uploads/tender/1-worksheet-20-11-2026.pdf",
+      "pdfUrl": "https://nppa.gov.in/storage/uploads/tender/1-worksheet-20-11-2026.pdf",
+      "fetchedAt": "2026-11-21T09:11:50.562Z",
       "isLiveFetched": true
     },
     {
@@ -2414,7 +2064,7 @@
       "message": "Baseline NPPA master & 10:00 AM IST scheduled registry initialized."
     }
   ],
-  "lastDailyRunDateIst": "2026-11-19",
+  "lastDailyRunDateIst": "2026-11-21",
   "ceilingPriceHistory": [
     {
       "id": "cph-1795071217442-48",

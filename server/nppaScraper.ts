@@ -840,15 +840,50 @@ function extractFileNameFromResponse(res: Response, targetUrl: string, fallbackR
   return `${safeRef || 'nppa-notification'}.pdf`;
 }
 
+function assertAllowedNppaUrl(rawUrl: string): URL {
+  let parsed: URL;
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    throw new Error('Invalid NPPA document URL.');
+  }
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+    throw new Error('Only HTTP/HTTPS NPPA document URLs can be downloaded.');
+  }
+  const host = parsed.hostname.toLowerCase();
+  const isBlockedPrivate =
+    host === 'localhost' ||
+    host === '0.0.0.0' ||
+    host === '::1' ||
+    host.endsWith('.local') ||
+    host.endsWith('.internal') ||
+    /^127\./.test(host) ||
+    /^10\./.test(host) ||
+    /^192\.168\./.test(host) ||
+    /^169\.254\./.test(host) ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(host);
+  if (isBlockedPrivate) {
+    throw new Error('Private or loopback network hosts are not permitted.');
+  }
+  const isAllowedGovHost =
+    host === 'nppa.gov.in' ||
+    host.endsWith('.nppa.gov.in') ||
+    host.endsWith('.gov.in') ||
+    host.endsWith('.nic.in');
+  if (!isAllowedGovHost) {
+    throw new Error('Only official NPPA / Government of India (.gov.in / .nic.in) URLs are permitted.');
+  }
+  return parsed;
+}
+
 export async function downloadNppaPdfBuffer(
   targetUrl: string,
   fallbackRef?: string
 ): Promise<{ buffer: Buffer; fileName: string; resolvedUrl: string }> {
-  if (!/^https?:\/\//i.test(targetUrl)) {
-    throw new Error('Only HTTP/HTTPS NPPA document URLs can be downloaded.');
-  }
+  const safeTarget = assertAllowedNppaUrl(targetUrl);
 
   const fetchWithTimeout = async (urlToFetch: string) => {
+    assertAllowedNppaUrl(urlToFetch);
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 15000);
     try {
@@ -865,7 +900,7 @@ export async function downloadNppaPdfBuffer(
     }
   };
 
-  const res = await fetchWithTimeout(targetUrl);
+  const res = await fetchWithTimeout(safeTarget.toString());
   if (!res.ok) {
     throw new Error(`NPPA portal returned HTTP ${res.status} while downloading PDF.`);
   }

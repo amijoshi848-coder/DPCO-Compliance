@@ -15,7 +15,9 @@ import {
 import { generateStandaloneHtml } from './server/standaloneHtmlGenerator.ts';
 import {
   createSessionToken,
+  getEnvAdminCredentials,
   hashPassword,
+  hasActiveAdmin,
   loadDb,
   saveDb,
   toPublicUser,
@@ -52,10 +54,10 @@ interface AuthedRequest extends Request {
   authUser?: AuthUser;
 }
 
-function extractBearer(req: Request): string | null {
+function extractAuthToken(req: Request): { token: string | null; viaCookie: boolean } {
   const header = req.headers.authorization;
   if (header && header.startsWith('Bearer ')) {
-    return header.slice(7).trim();
+    return { token: header.slice(7).trim(), viaCookie: false };
   }
   const cookieHeader = req.headers.cookie;
   if (cookieHeader) {
@@ -64,16 +66,63 @@ function extractBearer(req: Request): string | null {
       .map((c) => c.trim())
       .find((c) => c.startsWith('dpco_token='));
     if (match) {
-      return decodeURIComponent(match.split('=')[1] || '');
+      return { token: decodeURIComponent(match.split('=')[1] || ''), viaCookie: true };
     }
   }
-  return null;
+  return { token: null, viaCookie: false };
+}
+
+function isSameOriginMutation(req: Request): boolean {
+  if (req.headers['x-requested-with']) return true;
+  const origin = req.headers.origin;
+  const expectedHost = (req.headers['x-forwarded-host'] || req.headers.host || '').toString().toLowerCase();
+  if (!origin || !expectedHost) return false;
+  try {
+    return new URL(origin).host.toLowerCase() === expectedHost;
+  } catch {
+    return false;
+  }
+}
+
+function setSessionCookie(req: Request, res: Response, token: string): void {
+  const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https';
+  const parts = [
+    `dpco_token=${encodeURIComponent(token)}`,
+    'Path=/',
+    'HttpOnly',
+    `Max-Age=${7 * 24 * 60 * 60}`,
+  ];
+  if (isHttps) {
+    parts.push('Secure', 'SameSite=None', 'Partitioned');
+  } else {
+    parts.push('SameSite=Lax');
+  }
+  res.setHeader('Set-Cookie', parts.join('; '));
+}
+
+function clearSessionCookie(req: Request, res: Response): void {
+  const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https';
+  const parts = ['dpco_token=', 'Path=/', 'HttpOnly', 'Max-Age=0'];
+  if (isHttps) {
+    parts.push('Secure', 'SameSite=None', 'Partitioned');
+  } else {
+    parts.push('SameSite=Lax');
+  }
+  res.setHeader('Set-Cookie', parts.join('; '));
 }
 
 function requireAuth(req: AuthedRequest, res: Response, next: NextFunction): void {
-  const token = extractBearer(req);
+  const { token, viaCookie } = extractAuthToken(req);
   if (!token) {
     res.status(401).json({ error: 'Authentication required.' });
+    return;
+  }
+  if (
+    viaCookie &&
+    ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method.toUpperCase()) &&
+    !isSameOriginMutation(req)
+  ) {
+    res.status(403).json({ error: 'Cross-site request verification failed.' });
     return;
   }
   const verified = verifySessionToken(token);
@@ -101,6 +150,7 @@ function requireAdmin(req: AuthedRequest, res: Response, next: NextFunction): vo
 
 async function createApp() {
   const app = express();
+  app.set('trust proxy', 1);
   app.use(express.json({ limit: '25mb' }));
 
   // Initialize DB and daily 10:00 AM IST scheduler
@@ -128,6 +178,66 @@ async function createApp() {
   });
 
   // --- Auth Routes ---
+  app.get('/api/auth/status', (_req, res) => {
+    const db = loadDb();
+    res.json({
+      adminConfigured: hasActiveAdmin(db),
+      envAdminConfigured: Boolean(getEnvAdminCredentials()),
+    });
+  });
+
+  app.post('/api/auth/setup-admin', (req, res) => {
+    if (getEnvAdminCredentials()) {
+      res.status(403).json({
+        error: 'Initial administrator is managed by server environment variables.',
+      });
+      return;
+    }
+    const db = loadDb();
+    if (hasActiveAdmin(db)) {
+      res.status(403).json({ error: 'Initial administrator is already configured.' });
+      return;
+    }
+
+    const { loginId, password, fullName, department } = req.body as {
+      loginId?: string;
+      password?: string;
+      fullName?: string;
+      department?: string;
+    };
+    const cleanLogin = loginId?.trim() || '';
+    const cleanPass = password?.trim() || '';
+    if (cleanLogin.length < 3 || cleanPass.length < 8) {
+      res.status(400).json({
+        error: 'Login ID (min 3 characters) and Password (min 8 characters) are required.',
+      });
+      return;
+    }
+
+    const nowIso = new Date().toISOString();
+    const adminUser = {
+      id: 'usr-admin',
+      loginId: cleanLogin,
+      fullName: (fullName || 'DPCO Administrator').trim(),
+      department: (department || 'Regulatory & Pricing Governance').trim(),
+      role: 'admin' as const,
+      passwordHash: hashPassword(cleanPass),
+      active: true,
+      createdAt: nowIso,
+      lastLoginAt: nowIso,
+    };
+    db.users = [
+      adminUser,
+      ...db.users.filter((u) => u.loginId.toLowerCase() !== cleanLogin.toLowerCase()),
+    ];
+    saveDb(db);
+
+    const publicUser = toPublicUser(adminUser);
+    const token = createSessionToken(publicUser);
+    setSessionCookie(req, res, token);
+    res.status(201).json({ token, user: publicUser });
+  });
+
   app.post('/api/auth/login', (req, res) => {
     const { loginId, password } = req.body as { loginId?: string; password?: string };
     if (!loginId || !password) {
@@ -157,7 +267,13 @@ async function createApp() {
 
     const publicUser = toPublicUser(user);
     const token = createSessionToken(publicUser);
+    setSessionCookie(req, res, token);
     res.json({ token, user: publicUser });
+  });
+
+  app.post('/api/auth/logout', (req, res) => {
+    clearSessionCookie(req, res);
+    res.json({ ok: true });
   });
 
   app.get('/api/auth/me', requireAuth, (req: AuthedRequest, res) => {
@@ -1189,6 +1305,11 @@ async function createApp() {
     }
     saveDb(db);
     res.json({ ok: true, calendar: buildComplianceCalendar(db) });
+  });
+
+  // --- Unmatched API 404 Handler ---
+  app.all('/api/*', (_req, res) => {
+    res.status(404).json({ error: 'API endpoint not found.' });
   });
 
   // --- Vite / Static Frontend Serving ---

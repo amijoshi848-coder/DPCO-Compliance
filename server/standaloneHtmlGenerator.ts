@@ -103,9 +103,9 @@ export function generateStandaloneHtml(): string {
         <h2 style="font-size:1.25rem;margin-bottom:16px;">Authorized Sign In</h2>
         <form onsubmit="event.preventDefault(); document.getElementById('login-view').classList.add('hidden'); document.getElementById('app-view').classList.remove('hidden');">
           <label for="loginId">Login ID</label>
-          <input id="loginId" type="text" value="admin" required />
+          <input id="loginId" type="text" placeholder="Enter Login ID" required />
           <label for="password">Password</label>
-          <input id="password" type="password" value="admin@123" required />
+          <input id="password" type="password" placeholder="Enter Password" required />
           <button type="submit" style="width:100%;">Sign In to Workspace</button>
         </form>
       </div>

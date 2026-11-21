@@ -1,23 +1,11 @@
-const TOKEN_KEY = 'dpco_compliance_token';
+let inMemoryToken: string | null = null;
 
 export function getStoredToken(): string | null {
-  try {
-    return localStorage.getItem(TOKEN_KEY);
-  } catch {
-    return null;
-  }
+  return inMemoryToken;
 }
 
 export function setStoredToken(token: string | null): void {
-  try {
-    if (token) {
-      localStorage.setItem(TOKEN_KEY, token);
-    } else {
-      localStorage.removeItem(TOKEN_KEY);
-    }
-  } catch {
-    // ignore storage errors
-  }
+  inMemoryToken = token;
 }
 
 export async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -26,12 +14,14 @@ export async function apiFetch<T>(url: string, options: RequestInit = {}): Promi
   if (!headers.has('Content-Type') && options.body) {
     headers.set('Content-Type', 'application/json');
   }
+  headers.set('X-Requested-With', 'DPCO-SPA');
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);
   }
 
   const res = await fetch(url, {
     ...options,
+    credentials: 'same-origin',
     headers,
   });
 
